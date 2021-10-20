@@ -87,7 +87,7 @@ where \(\tau_{\mathrm{int}}^{\mathcal{O}}\) is the integrated autocorrelation
 time.
 %
 This quantity can be interpreted as the additional time required for
-these induced correlations become negligible.
+these induced correlations to become negligible.
 %
 \subsection{\label{subsec:qfreezing}Charge Freezing}
 %
@@ -277,7 +277,8 @@ must preserve
 \end{enumerate}
 %
 We can introduce a persistent direction,\footnote{%
-    Here, we associate \(+\) (\(-\)) with the forward (backward) directions, respectively.
+    Here, we associate \(+\) (\(-\)) with the forward (backward) directions,
+    respectively.
 }
 variable \(d \sim \mathcal{U}(+, -)\), again distributed independently of both
 \(x\) and \(v\), and denote the complete state by \(\xi = (x, v, \pm)\).
@@ -293,16 +294,17 @@ Sec~\ref{subsec:lf}, and include the high-level steps below:
 %
 \begin{enumerate}
     \item Resample \(v \sim \mathcal{N} (0, \mathbbm{1})\), \(d \sim
-        \mathcal{U} (+, -)\) construct initial state \(\xi_{0} = (x_{0}, v_{0},
-        \pm)\)
-    \item Generate the proposal configuration by passing the initial state
-        sequentially through \(N_{\mathrm{LF}}\)
-        \emph{leapfrog layers}\footnote{%
+        \mathcal{U} (+, -)\), and construct initial state \(\xi_{0} = (x_{0},
+        v_{0}, \pm)\)
+    \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
+        initial state sequentially through \(N_{\mathrm{LF}}\) \emph{leapfrog
+            layers}\footnote{%
             We defer the details of this leapfrog layer to the following
             section.
         } to construct a trajectory.
 	    \begin{equation}
-            \xi_{0} \longrightarrow \xi_{1} \longrightarrow \ldots \longrightarrow \xi_{N_{\mathrm{LF}}} = \xi^{\ast}
+            \xi_{0} \rightarrow \xi_{1} \rightarrow \ldots \rightarrow%
+            \xi_{N_{\mathrm{LF}}} = \xi^{\ast}
         \end{equation}
     \item Metropolis-Hastings accept/reject to determine next state in chain.
 \end{enumerate}
