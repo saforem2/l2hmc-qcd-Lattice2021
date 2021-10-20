@@ -3,9 +3,23 @@
 % data according to the instructions in PoSauthmanual.pdf
 \documentclass[a4paper,11pt]{article}
 \usepackage{pos}
+\usepackage{wrapfig}
+\usepackage{bbm}
+\usepackage{natbib}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{graphicx}% Include figure files
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+\usepackage[ruled, vlined]{algorithm2e}
+\usepackage{silence}
+\usepackage{subcaption}
+\usepackage[normalem]{ulem}
+% \reversemarginpar
+\newcommand{\mpar}[1]{\marginpar{\color{red}{#1}}}
 
 \title{LeapfrogLayers: A Trainable Framework for Effective Topological Sampling}
-%% \ShortTitle{Short Title for header}
+% \ShortTitle{A Trainable Framework for effective Topological Sampling}
 
 \author*[a]{Sam Foreman}
 \author[a]{Xiao-Yong Jin}
@@ -32,11 +46,8 @@
 }
 
 \FullConference{%
-  % *** FIXME: Name of conference, ***\\
   The 38th International Symposium on Lattice Field Theory\\
-  % *** FIXME: day-day Month YEAR ***\\
   26-30 July 2021\\
-  % *** FIXME: Location, City, Country ***
   Zoom / Gather @ MIT, Cambridge MA, USA\\
 }
 
@@ -45,8 +56,263 @@
 \maketitle
 
 
-\section{...}
+\section{\label{sec:intro}Introduction}
+%
+One of the major goals of lattice field theory calculations is to evaluate
+integrals of the form
+%
+\begin{equation}
+    \langle \mathcal{O} \rangle \propto \int \left[ \mathcal{D} x \right] \mathcal{O}(x) p(x),
+    \label{eq:density_integral}
+\end{equation}
+%
+for some target distribution \(p(x)\propto e^{-S(x)}\).
+%
+We can approximate the integral using Markov Chain Monte Carlo (MCMC) sampling
+techniques.
+%
+This is done by sequentially generating a chain of configurations \(\{x_{1},
+x_{2}, \ldots x_{N}\}\), with \(x_{i} \sim p(x)\) and averaging the value of
+the function \(\mathcal{O}(x)\) over the chain.
+%
+Accounting for correlations between states in our chain, the sampling variance
+of this esimator is given by
+%
+\begin{equation}
+    \sigmaup^{2} = \frac{\tau_{\mathcal{O}}^{\mathrm{int}}}{N}\sum_{n=1}^{N} \mathrm{Var}\left[\mathcal{O}(x)\right]
+\end{equation}
+%
+% TODO: Elaborate on this
+where \(\tau_{\mathrm{int}}^{\mathcal{O}}\) is the integrated autocorrelation
+time.
+%
+This quantity can be interpreted as the additional time required for
+these induced correlations become negligible.
+%
+\subsection{\label{subsec:qfreezing}Charge Freezing}
+%
+\begin{wrapfigure}[19]{r}[36pt]{0.53\textwidth}
+    \vspace{-\baselineskip}
+    \centering
+    \includegraphics[width=0.53\textwidth]{assets/qfreezing.pdf}
+    \caption{\label{fig:qfreezing}Illustration of the topological charge \(Q\)
+    freezing as \(\beta : 2 \rightarrow 7\) for traditional HMC.}
+\end{wrapfigure}
+%
+The ability to efficiently generate independent configurations is currently
+a major bottleneck for lattice simulations.
+%
+In this work we consider a \(U(1)\) gauge model on a 2D lattice with periodic
+boundary conditions.
+%
+The theory is defined in terms of the link variables \(U_{\mu}(x) = e^{i
+x_{\mu}(n)} \in U(1)\) with \(x_{\mu}(n) \in [-\pi, \pi]\).
+%
+Our target distribution is given by \(p(x)\propto e^{-S_{\beta}(x)}\), where
+\(S_{\beta}(x)\) is the Wilson action
+%
+\begin{align}
+    S_{\beta}(x) &= \beta \sum_{P} 1 - \cos{x_{P}}, \text{ and}\\
+    x_{P} &\equiv \big[x_{\mu}(n) + x_{\nu}(n + \hat{\mu})\nonumber \\
+          &\quad\quad\,\, - x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)\big],\nonumber
+\end{align}
+%
+is the sum of the gauge variables around the elementary plaquette.
+%
+Each lattice configuration has a distinct topological charge \(Q \in
+\mathbb{Z}\) given by
+%
+\begin{align*}
+    Q_{\mathbb{Z}} &= \frac{1}{2\pi}\sum_{P}\left\lfloor x_{P} \right\rfloor,\text{ where } \\
+    \left\lfloor x_{P} \right\rfloor &\equiv x_{P} - 2\pi
+    \left\lfloor\frac{x_{P}+\pi}{2\pi}\right\rfloor.
+\end{align*}
+%
+As \(\beta \rightarrow \infty\), the \(Q_{\mathbb{Z}} = 0\) mode becomes
+dominant and we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
+durations of the simulation.
+%
 
+This can be seen by introducing the \emph{tunneling rate}\footnote{As measured
+between subsequent states in our chain \(i\), \(i+1\).}
+%
+\begin{equation}
+    \delta Q \equiv \left|Q_{i+1} - Q_{i}\right| \in \mathbb{Z}.
+\end{equation}
+%
+This quantity serves as a measure for how efficiently our chain is able to jump
+(tunnel) between sectors of distinct topological charge.
+%
+From Fig~\ref{fig:qfreezing}, we can see that \(\delta Q\rightarrow 0\) as
+\(\beta\rightarrow \infty\).
+%
+\section{\label{sec:hmc}Hamiltonian Monte Carlo (HMC)}
+%
+We first briefly review the ideas of the Hamiltonian Monte Carlo (HMC)
+algorithm and highlight some of the issues faced with this approach.
+%
+We begin by introducing a fictitious momentum \(v \sim \mathcal{N}(0,
+\mathbbm{1})\) distributed independently of \(x\).
+%
+This allows us to write the joint target density of the \(\xi \equiv (x, v)\)
+system as
+%
+\begin{equation}
+    p(x, v) = p(x) \cdot p(v) = e^{-S_{\beta}(x)}\cdot e^{-v^{T} v / 2} = e^{-H(x, v)}
+\end{equation}
+%
+where \(H(\xi) = H(x, v) = S_{\beta}(x) + \frac{1}{2} v^{T} v\) is the
+Hamiltonian of the system.
+%
+
+\subsection{\label{subsec:lf}Leapfrog Integrator}
+%
+For a given initial state \(\xi_{0}\), we can use Hamilton's equations to
+evolve the systems dynamics 
+%
+\begin{equation}
+    \dot{x} = \frac{\partial H}{\partial v}\quad \text{,} \quad \dot{v} = -\frac{\partial H}{\partial x}
+\end{equation}
+%
+along isoprobability contours of \(H =\text{const.}\) from \(\xi_{0} = (x_{0},
+v_{0})\rightarrow (x^{\ast}, v^{\ast})\).
+%
+We can numerically integrate this system of equations using the \emph{leapfrog
+integrator}, which is composed of the following three steps:
+%
+\begin{enumerate}
+    \item Starting from \(x_{0}\), resample the momentum \(v_{0}\sim
+        \mathcal{N}(0, \mathbbm{1})\) and construct the state \(\xi_{0} =
+        (x_{0}, v_{0})\).
+    \item Generate a \emph{proposal configuration} \(\xi^{\ast}\) by integrating
+        along \(H = \mathrm{const.}\) for \(N_{\mathrm{LF}}\) leapfrog steps,
+        i.e.
+        \begin{equation}
+            \xi_{0}\rightarrow \xi_{1}\rightarrow\ldots\rightarrow \xi_{N_{\mathrm{LF} - 1}}\rightarrow \xi_{N_{\mathrm{LF}}} \equiv \xi^{\ast},
+        \end{equation}
+        where a single leapfrog step \(\xi_{i} \rightarrow \xi_{i+1}\) above
+        consists of: 
+        %
+        \begin{equation}
+            \textbf{(1.) } \tilde{v}\leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x),
+            \quad\quad \textbf{ (2.) } x' \leftarrow x + \varepsilon \tilde{v},
+            \quad\quad \textbf{ (3.) } v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x).
+        \end{equation}
+        %
+    \item At the end of the trajectory, accept or reject the proposal
+        configuration \(\xi^{\ast}\) using the Metropolis-Hastings (MH) test.
+        \begin{equation}
+            x_{i+1} \leftarrow
+            \begin{cases}
+                x^{\ast}\text{ with probability } A(\xi^{\ast}|\xi)\\
+                x_{i}\text{ with probability } 1 - A(\xi^{\ast}|\xi),
+            \end{cases}
+        \end{equation}
+        %
+        where
+        %
+        \begin{equation}
+            A(\xi^{\ast}|\xi) \equiv \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}\left|\frac{\partial \xi^{\ast}}{\partial \xi^{T}}\right|\right\}.
+        \end{equation}
+\end{enumerate}
+%
+An illustration of this procedure can be seen in Fig~\ref{fig:hmc}.
+%
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\textwidth]{assets/hmc.pdf}
+    \caption{\label{fig:hmc}High-level overview of the HMC algorithm.}
+\end{figure}
+%
+\subsection{\label{subsec:hmc_issues}Issues with HMC}
+% Re-sampling the momentum at the start of each trajectory randomly selects the
+% equipotential we will integrate along. energy level which is known to lead to
+% slow mixing (long autocorrelations).
+%
+Re-sampling the momentum at the start of each trajectory causes the energy
+levels we explore to be randomly selected.
+%
+This is reminiscient of the ``random-walk'' behavior of traditional MCMC and
+leads to a slow exploration of our target distribution (i.e. long
+autocorrelations).
+%
+% Randomly sampling the momentum at the start of each trajectory the energy level
+% which is known to lead to slow mixing (long autocorrelations).
+%
+Additionally, the HMC sampler is known to have difficulty traversing
+low-density zones, resulting in poor performance for distributions which have
+multiple isolated modes.
+%
+This list of criteria helps to illuminate the qualities we would like our
+(ideal) sampler to exhibit; namely, we would like for our sampler to: 
+%
+% These criteria highlight the properties we would like to achieve in an ideal sampler.
+% %
+% Namely, we would like our sampler to: 
+%
+\begin{itemize}
+    \item quickly converge to the true target distribution
+    \item mix quickly once converged (short autocorrelations)
+    \item be able to mix across energy levels and isolated modes
+\end{itemize}
+%
+\section{\label{sec:l2hmc}Generalizing the Leapfrog Update}
+%
+We can generalize the leapfrog update from Sec~\ref{subsec:lf} by introducing
+six (for now, arbitrary continuous) functions \(s_{x}, t_{x}, q_{x}\) and
+\(s_{v}, t_{v}, q_{v}\) (collectively denoted by \(\Lambda^{\pm}\) and
+\(\Gamma^{\pm}\), respectively) into the update equations.
+%
+Each of these functions are parameterized by a set of weights \(\theta\) in a
+neural network.
+%
+In order to retain the theoretical guarantees of HMC, our generalized update
+must preserve
+%
+\begin{enumerate}
+    \item Ergodicity
+    \item Reversibility, i.e. \(p(a \rightarrow b) = p(b \rightarrow a)\)
+    \item The detailed balance condition, i.e. \(p(x') K(x|x') = p(x)
+        K(x'|x)\), for an arbitrary transition kernel K.
+\end{enumerate}
+%
+We can introduce a persistent direction,\footnote{%
+    Here, we associate \(+\) (\(-\)) with the forward (backward) directions, respectively.
+}
+variable \(d \sim \mathcal{U}(+, -)\), again distributed independently of both
+\(x\) and \(v\), and denote the complete state by \(\xi = (x, v, \pm)\).
+%
+With this modification, our joint target density becomes
+%
+\begin{equation}
+    p(\xi) = p(x, v, \pm) = p(x)\cdot p(v)\cdot p(\pm).
+\end{equation}
+%
+Again, we proceed similar to the generic HMC leapfrog update from
+Sec~\ref{subsec:lf}, and include the high-level steps below:
+%
+\begin{enumerate}
+    \item Resample \(v \sim \mathcal{N} (0, \mathbbm{1})\), \(d \sim
+        \mathcal{U} (+, -)\) construct initial state \(\xi_{0} = (x_{0}, v_{0},
+        \pm)\)
+    \item Generate the proposal configuration by passing the initial state
+        sequentially through \(N_{\mathrm{LF}}\)
+        \emph{leapfrog layers}\footnote{%
+            We defer the details of this leapfrog layer to the following
+            section.
+        } to construct a trajectory.
+	    \begin{equation}
+            \xi_{0} \longrightarrow \xi_{1} \longrightarrow \ldots \longrightarrow \xi_{N_{\mathrm{LF}}} = \xi^{\ast}
+        \end{equation}
+    \item Metropolis-Hastings accept/reject to determine next state in chain.
+\end{enumerate}
+
+
+
+% \footnote{We defer the details of this leapfrog layer to the following section.},%
+
+%
+%
 \begin{thebibliography}{99}
 \bibitem{...}
 ....
@@ -54,3 +320,47 @@
 \end{thebibliography}
 
 \end{document}
+
+% -------- OLD {{{
+%
+% If we had \(N\) \emph{independent} configurations \(\{x_{1}, x_{2}, \ldots
+% x_{N}\}\), with \(x_{i}\sim p(x)\) we could approximate this integral by
+% averaging the value of the function \(\mathcal{O}(x)\) across our
+% configurations.
+% %
+% % The variance of the expectation value \(\langle\mathcal{O}\rangle\) is then
+% The sampling variance of this estimation is then \(\sigmaup \propto
+% \frac{1}{\sqrt{N}}\).
+% %
+% Explicitly,
+% %
+% \begin{equation}
+%     \langle \mathcal{O} \rangle \simeq \frac{1}{N} \sum_{n=1}^{N} \mathcal{O} (x_{n})
+%     \Longrightarrow\,
+%     \sigmaup^{2} = \frac{1}{N} \mathrm{Var}\left[\mathcal{O} (x)\right].
+% \end{equation}
+% %
+% In order to generate configurations distributed according to our target
+% distribution, we use Markov Chain Monte Carlo (MCMC) sampling techniques.
+% %
+% Unfortunately, this introduces correlations between sequential configurations
+% and our sampling variance instead is given by
+%
+% The sampling variance associated with sequential Markov Chain Monte Carlo
+% (MCMC) estimators is known to 
+%
+% }}}
+% -------- COMMENTS {{{
+% As we approach the continuum limit (\(\beta \rightarrow \infty\)), the
+% generated configurations tend to get stuck in sectors of fixed gauge topology,
+% causing \(\tau_{\mathcal{O}}^{\mathrm{int}}\) to grow exponentially, as shown
+% in Fig~\ref{fig:qfreezing}.
+% %
+% We can quantify this behavior by looking at the \emph{tunneling rate},
+
+% By estimating physical quantities of interest across a range of physical
+% lattice spacings \(a\), we are able to reliably extrapolate our predictions to
+% the continuum limit where they can be compared against experimental
+% measurements.
+% %
+% }}}
