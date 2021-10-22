@@ -18,6 +18,15 @@
 % \reversemarginpar
 \newcommand{\mpar}[1]{\marginpar{\color{red}{#1}}}
 
+\definecolor{blue}{HTML}{007fff}
+\definecolor{red}{HTML}{FF2052}
+
+\newcommand{\mask}{\textcolor{blue}{m}}
+\newcommand{\maskbar}{\textcolor{red}{\bar{m}}}
+
+\newcommand{\mbart}{\textcolor{red}{\bar{m}^{k}}}
+\newcommand{\mt}{\textcolor{blue}{m^{k}}}
+
 \title{LeapfrogLayers: A Trainable Framework for Effective Topological Sampling}
 % \ShortTitle{A Trainable Framework for effective Topological Sampling}
 
@@ -35,7 +44,7 @@
 \emailAdd{xjin@anl.gov}
 \emailAdd{osborn@alcf.anl.gov}
 
-\abstract{%
+\abstract{
     We introduce LeapfrogLayers, an invertible neural network architecture that
     can be trained to efficiently sample the topology of a 2D $U(1)$ lattice
     gauge theory. 
@@ -45,7 +54,7 @@
     for scaling our model to larger lattice volumes.
 }
 
-\FullConference{%
+\FullConference{
   The 38th International Symposium on Lattice Field Theory\\
   26-30 July 2021\\
   Zoom / Gather @ MIT, Cambridge MA, USA\\
@@ -165,7 +174,7 @@ where \(H(\xi) = H(x, v) = S_{\beta}(x) + \frac{1}{2} v^{T} v\) is the
 Hamiltonian of the system.
 %
 
-\subsection{\label{subsec:lf}Leapfrog Integrator}
+\subsection{\label{subsec:lfint}Leapfrog Integrator}
 %
 For a given initial state \(\xi_{0}\), we can use Hamilton's equations to
 evolve the systems dynamics 
@@ -184,19 +193,27 @@ integrator}, which is composed of the following three steps:
     \item Starting from \(x_{0}\), resample the momentum \(v_{0}\sim
         \mathcal{N}(0, \mathbbm{1})\) and construct the state \(\xi_{0} =
         (x_{0}, v_{0})\).
-    \item Generate a \emph{proposal configuration} \(\xi^{\ast}\) by integrating
-        along \(H = \mathrm{const.}\) for \(N_{\mathrm{LF}}\) leapfrog steps,
+    \item Generate a \emph{proposal configuration} \(\xi^{\ast}\) by
+        integrating \(\dot\xi\) along \(H = \mathrm{const.}\)
+        for \(N\) leapfrog steps.
         i.e.
         \begin{equation}
-            \xi_{0}\rightarrow \xi_{1}\rightarrow\ldots\rightarrow \xi_{N_{\mathrm{LF} - 1}}\rightarrow \xi_{N_{\mathrm{LF}}} \equiv \xi^{\ast},
+            \xi_{0}\rightarrow \xi_{1}\rightarrow\ldots\rightarrow%
+            % \xi_{N_{\mathrm{LF} - 1}}\rightarrow%
+            \xi_{N} \equiv \xi^{\ast},
         \end{equation}
         where a single leapfrog step \(\xi_{i} \rightarrow \xi_{i+1}\) above
         consists of: 
         %
         \begin{equation}
-            \textbf{(1.) } \tilde{v}\leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x),
-            \quad\quad \textbf{ (2.) } x' \leftarrow x + \varepsilon \tilde{v},
-            \quad\quad \textbf{ (3.) } v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x).
+            \textbf{ (a.) }%
+              \tilde{v}\leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x),
+            \quad\quad
+            \textbf{ (b.) }%
+              x' \leftarrow x + \varepsilon \tilde{v},
+            \quad\quad
+            \textbf{ (c.) }%
+              v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x).
         \end{equation}
         %
     \item At the end of the trajectory, accept or reject the proposal
@@ -243,12 +260,14 @@ Additionally, the HMC sampler is known to have difficulty traversing
 low-density zones, resulting in poor performance for distributions which have
 multiple isolated modes.
 %
-This list of criteria helps to illuminate the qualities we would like our
-(ideal) sampler to exhibit; namely, we would like for our sampler to: 
+This is particularly relevant in the case of sampling topological quantities in lattice gauge models.
 %
 % These criteria highlight the properties we would like to achieve in an ideal sampler.
 % %
 % Namely, we would like our sampler to: 
+%
+This list of criteria helps to illuminate the qualities we would like our
+(ideal) sampler to exhibit; namely, we would like for our sampler to: 
 %
 \begin{itemize}
     \item quickly converge to the true target distribution
@@ -256,65 +275,84 @@ This list of criteria helps to illuminate the qualities we would like our
     \item be able to mix across energy levels and isolated modes
 \end{itemize}
 %
-\section{\label{sec:l2hmc}Generalizing the Leapfrog Update}
+\section{\label{sec:l2hmc}Generalizing HMC: LeapfrogLayers}
 %
-We can generalize the leapfrog update from Sec~\ref{subsec:lf} by introducing
-six (for now, arbitrary continuous) functions \(s_{x}, t_{x}, q_{x}\) and
-\(s_{v}, t_{v}, q_{v}\) (collectively denoted by \(\Lambda^{\pm}\) and
-\(\Gamma^{\pm}\), respectively) into the update equations.
+In order to preserve the asymptotic behavior of HMC, our update must
+%
+\begin{enumerate}
+    \item Be invertible / preserve reversibility, i.e. \(p(a\rightarrow b) =
+        p(b\rightarrow a)\)
+    \item Have a tractable Jacobian determinant.
+\end{enumerate}
+%
+To simplify notation, we introduce two functions, \(\Gamma\) \((\Lambda)\) to
+denote the \(v\) \((x)\) updates.
+%
+As in HMC, we follow the general pattern of performing alternating updates of
+\(v\) and \(x\).
+%
+In order to satisfy these requirements, we split the \(x\)-update
+into two parts, sequentially updating complementary subsets using a binary mask
+\(\mask\) and its complement \(\maskbar\).
+%
+Additionally, we introduce \(d \sim \mathcal{U}(+, -)\), distributed
+independently of both \(x\) and \(v\), to determine the ``direction'' of our
+update.
+%
+Here, we associate \(+\) \((-)\) with the forward (backward) direction and note
+that running sequential updates in opposite directions has the effect of
+inverting the update.
+%
+We denote the complete state by \(\xi = (x, v, \pm)\), with target density
+given by \(p(\xi) = p(x)\cdot p(v)\cdot p(\pm)\).
+%
+
+Explicitly, we can write this series of updates as 
+%
+\begin{align}
+    \mathbf{(1.)}\,\, \Gamma^{\pm} &: (v; \zeta_{v})  \rightarrow v' \\
+    \mathbf{(2.)}\,\, \Lambda^{\pm} &: (\mask \odot x; \zeta_{x}) \rightarrow x' \\
+    \mathbf{(3.)}\,\, \Lambda^{\pm} &: (\maskbar \odot x'; \zeta_{\bar{x'}}) \rightarrow x'' \\
+    \mathbf{(4.)}\,\, \Gamma^{\pm} &: (v', \zeta_{v'})\rightarrow v''
+\end{align}
+%
+where \(\zeta_{k}\) is independent of \(k\), and the subscript is used to
+denote the variable being updated \((k = x, v)\).
 %
 Each of these functions are parameterized by a set of weights \(\theta\) in a
 neural network.
 %
-In order to retain the theoretical guarantees of HMC, our generalized update
-must preserve
-%
-\begin{enumerate}
-    \item Ergodicity
-    \item Reversibility, i.e. \(p(a \rightarrow b) = p(b \rightarrow a)\)
-    \item The detailed balance condition, i.e. \(p(x') K(x|x') = p(x)
-        K(x'|x)\), for an arbitrary transition kernel K.
-\end{enumerate}
-%
-We can introduce a persistent direction,\footnote{%
-    Here, we associate \(+\) (\(-\)) with the forward (backward) directions,
-    respectively.
-}
-variable \(d \sim \mathcal{U}(+, -)\), again distributed independently of both
-\(x\) and \(v\), and denote the complete state by \(\xi = (x, v, \pm)\).
-%
-With this modification, our joint target density becomes
-%
-\begin{equation}
-    p(\xi) = p(x, v, \pm) = p(x)\cdot p(v)\cdot p(\pm).
-\end{equation}
-%
 Again, we proceed similar to the generic HMC leapfrog update from
-Sec~\ref{subsec:lf}, and include the high-level steps below:
+Sec~\ref{subsec:lfint}, and include the high-level steps below:
 %
 \begin{enumerate}
     \item Resample \(v \sim \mathcal{N} (0, \mathbbm{1})\), \(d \sim
         \mathcal{U} (+, -)\), and construct initial state \(\xi_{0} = (x_{0},
         v_{0}, \pm)\)
     \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
-        initial state sequentially through \(N_{\mathrm{LF}}\) \emph{leapfrog
-            layers}\footnote{%
-            We defer the details of this leapfrog layer to the following
-            section.
+        initial state sequentially through \(N\) \emph{leapfrog
+        layers}\footnote{
+            We defer the details to Sec~\ref{sec:l2hmc}.
         } to construct a trajectory.
 	    \begin{equation}
             \xi_{0} \rightarrow \xi_{1} \rightarrow \ldots \rightarrow%
-            \xi_{N_{\mathrm{LF}}} = \xi^{\ast}
+            \xi_{N} = \xi^{\ast}
         \end{equation}
     \item Metropolis-Hastings accept/reject to determine next state in chain.
 \end{enumerate}
-
-
-
-% \footnote{We defer the details of this leapfrog layer to the following section.},%
+%
 
 %
+
 %
+% Explicitly, if we denote by \(M^{\pm} = \left(\begin{smallmatrix}\Gamma^{\pm} &
+% \cdot \\ \cdot & \Lambda^{\pm}\end{smallmatrix}\right)\), we have that 
+% %
+% \begin{equation}
+%     \xi^{\pm} = M^{\pm}\xi \Longrightarrow \xi = M^{\mp}\xi^{\pm}.
+% \end{equation}
+% %
+
 \begin{thebibliography}{99}
 \bibitem{...}
 ....
@@ -322,47 +360,3 @@ Sec~\ref{subsec:lf}, and include the high-level steps below:
 \end{thebibliography}
 
 \end{document}
-
-% -------- OLD {{{
-%
-% If we had \(N\) \emph{independent} configurations \(\{x_{1}, x_{2}, \ldots
-% x_{N}\}\), with \(x_{i}\sim p(x)\) we could approximate this integral by
-% averaging the value of the function \(\mathcal{O}(x)\) across our
-% configurations.
-% %
-% % The variance of the expectation value \(\langle\mathcal{O}\rangle\) is then
-% The sampling variance of this estimation is then \(\sigmaup \propto
-% \frac{1}{\sqrt{N}}\).
-% %
-% Explicitly,
-% %
-% \begin{equation}
-%     \langle \mathcal{O} \rangle \simeq \frac{1}{N} \sum_{n=1}^{N} \mathcal{O} (x_{n})
-%     \Longrightarrow\,
-%     \sigmaup^{2} = \frac{1}{N} \mathrm{Var}\left[\mathcal{O} (x)\right].
-% \end{equation}
-% %
-% In order to generate configurations distributed according to our target
-% distribution, we use Markov Chain Monte Carlo (MCMC) sampling techniques.
-% %
-% Unfortunately, this introduces correlations between sequential configurations
-% and our sampling variance instead is given by
-%
-% The sampling variance associated with sequential Markov Chain Monte Carlo
-% (MCMC) estimators is known to 
-%
-% }}}
-% -------- COMMENTS {{{
-% As we approach the continuum limit (\(\beta \rightarrow \infty\)), the
-% generated configurations tend to get stuck in sectors of fixed gauge topology,
-% causing \(\tau_{\mathcal{O}}^{\mathrm{int}}\) to grow exponentially, as shown
-% in Fig~\ref{fig:qfreezing}.
-% %
-% We can quantify this behavior by looking at the \emph{tunneling rate},
-
-% By estimating physical quantities of interest across a range of physical
-% lattice spacings \(a\), we are able to reliably extrapolate our predictions to
-% the continuum limit where they can be compared against experimental
-% measurements.
-% %
-% }}}
