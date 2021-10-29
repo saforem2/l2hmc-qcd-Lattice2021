@@ -1,4 +1,4 @@
-%! TEX program = xelatex
+%!networks TEX program = xelatex
 % Please make sure you insert your
 % data according to the instructions in PoSauthmanual.pdf
 \documentclass[a4paper,11pt]{article}
@@ -16,16 +16,29 @@
 \usepackage{subcaption}
 \usepackage[normalem]{ulem}
 % \reversemarginpar
-\newcommand{\mpar}[1]{\marginpar{\color{red}{#1}}}
 
 \definecolor{blue}{HTML}{007fff}
 \definecolor{red}{HTML}{FF2052}
 
-\newcommand{\mask}{\textcolor{blue}{m}}
+\newcommand{\mask}{\textcolor{blue}{{m}}}
 \newcommand{\maskbar}{\textcolor{red}{\bar{m}}}
+
+\newcommand{\xmask}{\textcolor{blue}{{x}_{m}}}
+\newcommand{\xmaskbar}{\textcolor{red}{x_{\bar{m}}}}
+
+\newcommand{\xpmask}{\textcolor{blue}{{x'}_{m}}}
+\newcommand{\xpmaskbar}{\textcolor{red}{x'_{\bar{m}}}}
 
 \newcommand{\mbart}{\textcolor{red}{\bar{m}^{k}}}
 \newcommand{\mt}{\textcolor{blue}{m^{k}}}
+\newcommand{\gradS}{\partial_{x} S(x)}
+\newcommand{\acceptProb}{%
+            A(\xi^{\ast}|\xi) \equiv \min\left\{1,
+            \frac{p(\xi^{\ast})}{p(\xi)}%
+        \left|\frac{\partial \xi^{\ast}}{\partial \xi^{T}}\right|\right\}
+    }
+
+\newcommand{\mpar}[1]{\marginpar{\color{red}{#1}}}
 
 \title{LeapfrogLayers: A Trainable Framework for Effective Topological Sampling}
 % \ShortTitle{A Trainable Framework for effective Topological Sampling}
@@ -66,6 +79,8 @@
 
 
 \section{\label{sec:intro}Introduction}
+%
+\marginpar{\textcolor{red}{Background}}
 %
 One of the major goals of lattice field theory calculations is to evaluate
 integrals of the form
@@ -128,8 +143,8 @@ Our target distribution is given by \(p(x)\propto e^{-S_{\beta}(x)}\), where
 %
 is the sum of the gauge variables around the elementary plaquette.
 %
-Each lattice configuration has a distinct topological charge \(Q \in
-\mathbb{Z}\) given by
+For a given lattice configuration, we can calculate the topological charge \(Q
+\in \mathbb{Z}\) using
 %
 \begin{align*}
     Q_{\mathbb{Z}} &= \frac{1}{2\pi}\sum_{P}\left\lfloor x_{P} \right\rfloor,\text{ where } \\
@@ -229,7 +244,7 @@ integrator}, which is composed of the following three steps:
         where
         %
         \begin{equation}
-            A(\xi^{\ast}|\xi) \equiv \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}\left|\frac{\partial \xi^{\ast}}{\partial \xi^{T}}\right|\right\}.
+            \acceptProb.
         \end{equation}
 \end{enumerate}
 %
@@ -242,9 +257,6 @@ An illustration of this procedure can be seen in Fig~\ref{fig:hmc}.
 \end{figure}
 %
 \subsection{\label{subsec:hmc_issues}Issues with HMC}
-% Re-sampling the momentum at the start of each trajectory randomly selects the
-% equipotential we will integrate along. energy level which is known to lead to
-% slow mixing (long autocorrelations).
 %
 Re-sampling the momentum at the start of each trajectory causes the energy
 levels we explore to be randomly selected.
@@ -253,27 +265,22 @@ This is reminiscient of the ``random-walk'' behavior of traditional MCMC and
 leads to a slow exploration of our target distribution (i.e. long
 autocorrelations).
 %
-% Randomly sampling the momentum at the start of each trajectory the energy level
-% which is known to lead to slow mixing (long autocorrelations).
-%
 Additionally, the HMC sampler is known to have difficulty traversing
 low-density zones, resulting in poor performance for distributions which have
 multiple isolated modes.
 %
-This is particularly relevant in the case of sampling topological quantities in lattice gauge models.
+This is particularly relevant in the case of sampling topological quantities in
+lattice gauge models.
 %
-% These criteria highlight the properties we would like to achieve in an ideal sampler.
+%
+% This list of criteria helps to illuminate the qualities we would like our
+% (ideal) sampler to exhibit; namely, we would like for our sampler to: 
 % %
-% Namely, we would like our sampler to: 
-%
-This list of criteria helps to illuminate the qualities we would like our
-(ideal) sampler to exhibit; namely, we would like for our sampler to: 
-%
-\begin{itemize}
-    \item quickly converge to the true target distribution
-    \item mix quickly once converged (short autocorrelations)
-    \item be able to mix across energy levels and isolated modes
-\end{itemize}
+% \begin{itemize}
+%     \item quickly converge to the true target distribution
+%     \item mix quickly once converged (short autocorrelations)
+%     \item be able to mix across energy levels and isolated modes
+% \end{itemize}
 %
 \section{\label{sec:l2hmc}Generalizing HMC: LeapfrogLayers}
 %
@@ -295,9 +302,12 @@ In order to satisfy these requirements, we split the \(x\)-update
 into two parts, sequentially updating complementary subsets using a binary mask
 \(\mask\) and its complement \(\maskbar\).
 %
-Additionally, we introduce \(d \sim \mathcal{U}(+, -)\), distributed
+Additionally, we introduce \(d \sim \mathcal{U} (+, -)\), distributed
 independently of both \(x\) and \(v\), to determine the ``direction'' of our
-update.
+update\footnote{%
+  As indicated by the superscript \(\pm\) on \(\Gamma^{\pm}, \Lambda^{\pm}\) in
+  the update functions.
+}.
 %
 Here, we associate \(+\) \((-)\) with the forward (backward) direction and note
 that running sequential updates in opposite directions has the effect of
@@ -307,28 +317,106 @@ We denote the complete state by \(\xi = (x, v, \pm)\), with target density
 given by \(p(\xi) = p(x)\cdot p(v)\cdot p(\pm)\).
 %
 
-Explicitly, we can write this series of updates as 
+Explicitly, we can write this series of updates as\footnote{%
+  Here we denote by \(\xmask = \mask \odot x\) and 
+  \(\xmaskbar = \maskbar \odot x\) with \(\mathbbm{1} = \mask + \maskbar\).
+}
 %
 \begin{align}
-    \mathbf{(1.)}\,\, \Gamma^{\pm} &: (v; \zeta_{v})  \rightarrow v' \\
-    \mathbf{(2.)}\,\, \Lambda^{\pm} &: (\mask \odot x; \zeta_{x}) \rightarrow x' \\
-    \mathbf{(3.)}\,\, \Lambda^{\pm} &: (\maskbar \odot x'; \zeta_{\bar{x'}}) \rightarrow x'' \\
-    \mathbf{(4.)}\,\, \Gamma^{\pm} &: (v', \zeta_{v'})\rightarrow v''
+    \mathbf{(1.)}\,\,\,\, v' 
+        &= \Gamma^{\pm}\left[v;\, \zeta_{v} \right] \\
+    \mathbf{(2.)}\,\,\,\, x' 
+        &= \mask \odot x + \maskbar \odot \Lambda^{\pm} [\xmaskbar; \zeta_{\bar{x}}] \\
+    \mathbf{(3.)}\,\, x'' 
+        &= \maskbar \odot x' + \mask \odot \Lambda^{\pm} [\xmask; \zeta_{x'}] \\
+    \mathbf{(4.)}\,\, v'' 
+        &= \Gamma^{\pm} [v', \zeta_{v'}]
 \end{align}
 %
-where \(\zeta_{k}\) is independent of \(k\), and the subscript is used to
-denote the variable being updated \((k = x, v)\).
+where \(\zeta_{\bar{x}} = [\maskbar \odot x, v]\), \(\zeta_{x} = [\mask\odot x,
+v]\) \((\zeta_{v} = [x, \partial_{x} S(x)])\) is independent of \(x\) \((v)\)
+and is passed as input to the update functions \(\Lambda^{\pm}\)
+\((\Gamma^{\pm})\).
 %
-Each of these functions are parameterized by a set of weights \(\theta\) in a
-neural network.
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{assets/update_steps1.pdf}
+        \caption{\label{subfig:updates}Illustration of l2hmc updates.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.58\textwidth}
+        \includegraphics[width=\textwidth]{assets/leapfrog_layer.pdf}
+        \caption{\label{subfig:lfupdate}Illustration of the leapfrog layer used
+        to generate a proposal configuration via \(\xi\rightarrow \xi''\).}
+    \end{subfigure}
+    \vspace{1em}
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{assets/network_functions6.pdf}
+        \caption{\label{subfig:network_fns}Illustration of the update
+        functions.}
+    \end{subfigure}
+    \caption{\label{fig:networks}Various illustrations of the generalized
+        leapfrog update. Note that \(k\) indexes the leapfrog step along out
+    trajectory.}
+\end{figure}
 %
-Again, we proceed similar to the generic HMC leapfrog update from
-Sec~\ref{subsec:lfint}, and include the high-level steps below:
+%
+\subsection{\label{subsec:networks}Network Details}
+%
+Normalizing flows~\cite{dinhDensityEstimationUsing2016b} are an obvious choice
+for the structure of the update functions.
+%
+These architectures are easily invertible while maintaining a tractable
+Jacobian determinant, and have also been shown to be effective at approximating
+complicated target distributions in high-dimensional spaces ~\cite{%
+    foremanDeepLearningHamiltonian2021a,
+    dinhDensityEstimationUsing2016b,
+    albergoFlowbasedGenerativeModels2019b,%
+    boydaSamplingUsingSU2020a,%
+    kanwarEquivariantFlowbasedSampling2020a,%
+    wehenkelYouSayNormalizing2020a,%
+    levyGeneralizingHamiltonianMonte2018b,%
+    neklyudovOrbitalMCMC2020a,%
+    neklyudovInvolutiveMcmcUnifying2020a%
+},
+
+Note that we maintain separate networks \(\Gamma\), \(\Lambda\) with
+identical architectures for updating \(v\) and \(x\), respectively.
+%
+Without loss of generality, we describe below the details of the \(x\)-update
+for the forward \((d = +)\) direction, \(\Lambda^{+}[\xmaskbar;
+\zeta_{\bar{x}}]\)\footnote{
+    To obtain the expression for the \(d=-\) direction we simply invert the
+    update function and perform the updates in opposite order.
+}.
+%
+This network takes as input \(\zeta_{\bar{x}} = (\xmaskbar, v)\), where the
+gauge links are encoded as \([\cos(x), \sin(x)]\) for \(x \in [-\pi, \pi]\).
+%
+For simplicity, we consider a single leapfrog layer, which uses a series of
+hidden layers to produce outputs \(s_{x}, t_{x}, q_{x}\) of the same
+dimensionality as \(x\).
+%
+% In particular, the \texttt{RealNVP} architecture is known to 
+% architecture~\cite{dinhDensityEstimationUsing2016b} 
+%
+%
+Explicitly,
+%
+\begin{align}
+    h_{1} &= \sigma\left(a^{T} x_{i} + b^{T} v_{i} + b\right)\\
+    \tilde{x} &= \sum_{i} w_{i}^{(x)} x_{i} + b^{(x)} \in \mathbb{R}^{m}\\
+    \tilde{v} &= \sum_{i} w_{i}^{(v)} v_{i} + b^{(v)} \in \mathbb{R}^{m}\\
+    h_{1} = \sigma(\tilde x + \tilde{v})
+\end{align}
+
+\subsection{\label{subsec:trainstep}Training Step}
 %
 \begin{enumerate}
-    \item Resample \(v \sim \mathcal{N} (0, \mathbbm{1})\), \(d \sim
-        \mathcal{U} (+, -)\), and construct initial state \(\xi_{0} = (x_{0},
-        v_{0}, \pm)\)
+    \item Resample \(v \sim \mathcal{N} (0, \mathbbm{1})\),
+        \(d \sim \mathcal{U} (+, -)\), and construct initial state
+        \(\xi_{0} = (x_{0}, v_{0}, \pm)\)
     \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
         initial state sequentially through \(N\) \emph{leapfrog
         layers}\footnote{
@@ -338,12 +426,24 @@ Sec~\ref{subsec:lfint}, and include the high-level steps below:
             \xi_{0} \rightarrow \xi_{1} \rightarrow \ldots \rightarrow%
             \xi_{N} = \xi^{\ast}
         \end{equation}
-    \item Metropolis-Hastings accept/reject to determine next state in chain.
+    \item Compute the Metropolis-Hastings acceptance
+        \begin{equation}
+            A(\xi' | \xi) = 
+            \min\left\{1,
+            \frac{p(\xi')}{p(\xi)}\left|\frac{\partial \xi'}{\partial \xi^{T}} \right| \right\}
+            \label{eq:mhar}
+        \end{equation}
+    \item Evaluate the loss function \(\mathcal{L} \leftarrow
+        \mathcal{L}_{\theta}(\xi', \xi)\), and backpropagate gradients to
+        update weights in network.
+    \item Evaluate Metropolis-Hastings criteria and assign the next state in
+        the chain according to \(
+        x_{t+1} \leftarrow \begin{cases} 
+            x' \text{ with prob. } A(\xi'|\xi) \\ 
+            x \text{ with prob. } 1 - A(\xi'|\xi)
+        \end{cases}\).
 \end{enumerate}
 %
-
-%
-
 %
 % Explicitly, if we denote by \(M^{\pm} = \left(\begin{smallmatrix}\Gamma^{\pm} &
 % \cdot \\ \cdot & \Lambda^{\pm}\end{smallmatrix}\right)\), we have that 
@@ -353,10 +453,11 @@ Sec~\ref{subsec:lfint}, and include the high-level steps below:
 % \end{equation}
 % %
 
-\begin{thebibliography}{99}
-\bibitem{...}
-....
+% \begin{thebibliography}{98}
+\bibliography{main}
+\bibliographystyle{plain}
+% \bibitem{...}
 
-\end{thebibliography}
+% \end{thebibliography}
 
 \end{document}
