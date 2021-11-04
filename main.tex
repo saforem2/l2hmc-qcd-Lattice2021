@@ -236,15 +236,9 @@ integrator}, which is composed of the following three steps:
         \begin{equation}
             x_{i+1} \leftarrow
             \begin{cases}
-                x^{\ast}\text{ with probability } A(\xi^{\ast}|\xi)\\
+                x^{\ast}\text{ with probability } \acceptProb \\
                 x_{i}\text{ with probability } 1 - A(\xi^{\ast}|\xi),
             \end{cases}
-        \end{equation}
-        %
-        where
-        %
-        \begin{equation}
-            \acceptProb.
         \end{equation}
 \end{enumerate}
 %
@@ -341,26 +335,31 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
 \begin{figure}
     \centering
     \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{assets/update_steps1.pdf}
-        \caption{\label{subfig:updates}Illustration of l2hmc updates.}
+        \includegraphics[width=\textwidth]{assets/update_steps.pdf}
+        \caption{\label{subfig:updates}Generalized leapfrog update.}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.58\textwidth}
         \includegraphics[width=\textwidth]{assets/leapfrog_layer.pdf}
-        \caption{\label{subfig:lfupdate}Illustration of the leapfrog layer used
-        to generate a proposal configuration via \(\xi\rightarrow \xi''\).}
+        \caption{\label{subfig:lfupdate}Schematic diagram showing the data flow
+        through a leapfrog layer.}
     \end{subfigure}
     \vspace{1em}
     \begin{subfigure}[b]{\textwidth}
-        \includegraphics[width=\textwidth]{assets/network_functions6.pdf}
-        \caption{\label{subfig:network_fns}Illustration of the update
-        functions.}
+        \includegraphics[width=\textwidth]{assets/network_functions.pdf}
+        \caption{\label{subfig:network_fns}Detailed view of the first two steps
+        in Fig~\ref{subfig:updates}.}
     \end{subfigure}
     \caption{\label{fig:networks}Various illustrations of the generalized
-        leapfrog update. Note that \(k\) indexes the leapfrog step along out
+        leapfrog update. Note that \(k\) indexes the leapfrog step along our
     trajectory.}
 \end{figure}
 %
+%     of the leapfrog layer used
+%     to generate a proposal configuration \(\xi\rightarrow \xi''\) which is
+% then either accepted or rejected.}
+%     which uses invertible neural networks to augment the
+% traditional update.}
 %
 \subsection{\label{subsec:networks}Network Details}
 %
@@ -391,25 +390,40 @@ for the forward \((d = +)\) direction, \(\Lambda^{+}[\xmaskbar;
     update function and perform the updates in opposite order.
 }.
 %
-This network takes as input \(\zeta_{\bar{x}} = (\xmaskbar, v)\), where the
-gauge links are encoded as \([\cos(x), \sin(x)]\) for \(x \in [-\pi, \pi]\).
+For simplicity, we describe the data flow through a single leapfrog layer,
 %
-For simplicity, we consider a single leapfrog layer, which uses a series of
-hidden layers to produce outputs \(s_{x}, t_{x}, q_{x}\) of the same
-dimensionality as \(x\).
+which takes as input \(\zeta_{\bar{x}} = (\xmaskbar, v)\). For the 2D \(U(1)\)
+model, the gauge links are encoded as \([\cos(x), \sin(x)]\) for \(x \in [-\pi,
+\pi]\).
 %
-% In particular, the \texttt{RealNVP} architecture is known to 
-% architecture~\cite{dinhDensityEstimationUsing2016b} 
-%
-%
-Explicitly,
+Explicitly\footnote{
+    Here \(\sigma(\cdot)\) is a generic nonlinear activation function.
+},
 %
 \begin{align}
-    h_{1} &= \sigma\left(a^{T} x_{i} + b^{T} v_{i} + b\right)\\
-    \tilde{x} &= \sum_{i} w_{i}^{(x)} x_{i} + b^{(x)} \in \mathbb{R}^{m}\\
-    \tilde{v} &= \sum_{i} w_{i}^{(v)} v_{i} + b^{(v)} \in \mathbb{R}^{m}\\
-    h_{1} = \sigma(\tilde x + \tilde{v})
+    h_{1} &= \sigma\left(w_{x}^{t} x + w_{v}^{t} v + b_{1}\right)
+        \quad \in \mathbb{R}^{n_{1}} \\
+    h_{2} &= \sigma\left(w_{2}^{t} h_{1} + b_{2}\right)
+        \hspace{0.085\textwidth} \in \mathbb{R}^{n_{2}} \\
+    \nonumber& \vdots\\
+    h_{k} &= \sigma\left(w_{k}^{t} h_{k-1} + b_{k-1}\right)
+        \hspace{0.04\textwidth} \in \mathbb{R}^{n_{k}}.
 \end{align}
+%
+This is then split to produce outputs
+%
+\begin{align}
+    s_{x} &= \lambda_{s} \tanh \left( w^{T}_{s} h_{k} + b_{s} \right), \\
+    t_{x} &= w^{T}_{t} h_{k} + b_{t}, \\
+    q_{x} &= \lambda_{q}\tanh\left(w^{T}_{q} h_{k} + b_{q}\right),
+    \label{eq:net_outputs}
+\end{align}
+%
+of the same dimensionality as \(x\), where \(\lambda_{s}, \lambda_{q}\) are
+trainable parameters.
+%
+These outputs are then used to update \(x\), as shown in
+Fig~\ref{subfig:network_fns}.
 
 \subsection{\label{subsec:trainstep}Training Step}
 %
@@ -421,8 +435,8 @@ Explicitly,
         initial state sequentially through \(N\) \emph{leapfrog
         layers}\footnote{
             We defer the details to Sec~\ref{sec:l2hmc}.
-        } to construct a trajectory.
-	    \begin{equation}
+        } to construct a trajectory
+        \begin{equation}
             \xi_{0} \rightarrow \xi_{1} \rightarrow \ldots \rightarrow%
             \xi_{N} = \xi^{\ast}
         \end{equation}
