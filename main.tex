@@ -1,4 +1,4 @@
-%!networks TEX program = xelatex
+%!TEX program = xelatex
 % Please make sure you insert your
 % data according to the instructions in PoSauthmanual.pdf
 \documentclass[a4paper,11pt]{article}
@@ -172,11 +172,12 @@ From Fig~\ref{fig:qfreezing}, we can see that \(\delta Q\rightarrow 0\) as
 %
 \section{\label{sec:hmc}Hamiltonian Monte Carlo (HMC)}
 %
-We first briefly review the ideas of the Hamiltonian Monte Carlo (HMC)
-algorithm and highlight some of the issues faced with this approach.
+% We first briefly review the ideas of the Hamiltonian Monte Carlo (HMC)
+% algorithm and highlight some of the issues faced with this approach.
 %
-We begin by introducing a fictitious momentum \(v \sim \mathcal{N}(0,
-\mathbbm{1})\) distributed independently of \(x\).
+The Hamiltonian Monte Carlo algorithm begins by introducing a fictitious
+momentum \(v \sim \mathcal{N} (0, \mathbbm{1})\) distributed independently of
+\(x\).
 %
 This allows us to write the joint target density of the \(\xi \equiv (x, v)\)
 system as
@@ -188,33 +189,28 @@ system as
 where \(H(\xi) = H(x, v) = S_{\beta}(x) + \frac{1}{2} v^{T} v\) is the
 Hamiltonian of the system.
 %
-
-\subsection{\label{subsec:lfint}Leapfrog Integrator}
-%
-For a given initial state \(\xi_{0}\), we can use Hamilton's equations to
-evolve the systems dynamics 
+We use the \emph{leapfrog integrator} to numerically integrate Hamilton's
+equations \(\xi \rightarrow \xi^{\ast}\)
 %
 \begin{equation}
-    \dot{x} = \frac{\partial H}{\partial v}\quad \text{,} \quad \dot{v} = -\frac{\partial H}{\partial x}
+    \dot{x} = \frac{\partial H}{\partial v}\quad \text{,} \quad \dot{v} = - \frac{\partial H}{\partial x}
 \end{equation}
 %
-along isoprobability contours of \(H =\text{const.}\) from \(\xi_{0} = (x_{0},
-v_{0})\rightarrow (x^{\ast}, v^{\ast})\).
+along isoprobability contours of \(H =\text{const.}\) from \((\xi,
+v)\rightarrow (x^{\ast}, v^{\ast})\).
 %
-We can numerically integrate this system of equations using the \emph{leapfrog
-integrator}, which is composed of the following three steps:
+\subsection{\label{subsec:lfint}Leapfrog Integrator}
 %
 \begin{enumerate}
     \item Starting from \(x_{0}\), resample the momentum \(v_{0}\sim
-        \mathcal{N}(0, \mathbbm{1})\) and construct the state \(\xi_{0} =
+        \mathcal{N} (0, \mathbbm{1})\) and construct the state \(\xi_{0} =
         (x_{0}, v_{0})\).
     \item Generate a \emph{proposal configuration} \(\xi^{\ast}\) by
         integrating \(\dot\xi\) along \(H = \mathrm{const.}\)
         for \(N\) leapfrog steps.
         i.e.
         \begin{equation}
-            \xi_{0}\rightarrow \xi_{1}\rightarrow\ldots\rightarrow%
-            % \xi_{N_{\mathrm{LF} - 1}}\rightarrow%
+            \xi_{0}\rightarrow \xi_{1}\rightarrow\ldots\rightarrow
             \xi_{N} \equiv \xi^{\ast},
         \end{equation}
         where a single leapfrog step \(\xi_{i} \rightarrow \xi_{i+1}\) above
@@ -401,26 +397,24 @@ Explicitly\footnote{
 },
 %
 \begin{align}
-    h_{1} &= \sigma\left(w_{x}^{t} x + w_{v}^{t} v + b_{1}\right)
+    h_{1} &= \sigma\left(w_{x}^{T} x + w_{v}^{T} v + b_{1}\right)
         \quad \in \mathbb{R}^{n_{1}} \\
-    h_{2} &= \sigma\left(w_{2}^{t} h_{1} + b_{2}\right)
+    h_{2} &= \sigma\left(w_{2}^{T} h_{1} + b_{2}\right)
         \hspace{0.085\textwidth} \in \mathbb{R}^{n_{2}} \\
     \nonumber& \vdots\\
-    h_{k} &= \sigma\left(w_{k}^{t} h_{k-1} + b_{k-1}\right)
-        \hspace{0.04\textwidth} \in \mathbb{R}^{n_{k}}.
+    h_{k} &= \sigma\left(w_{k}^{T} h_{k-1} + b_{k-1}\right)
+        \hspace{0.04\textwidth} \in \mathbb{R}^{n_{k}} \Longrightarrow \\
+    \nonumber
+    \textbf{  [1.]  } s_{x} = \lambda_{s} \tanh \left( w^{T}_{s} h_{k} + b_{s} \right);
+    &\quad\textbf{  [2.]  } t_{x} = w^{T}_{t} h_{k} + b_{t};
+    \quad\textbf{  [3.]  } q_{x} = \lambda_{q}\tanh\left(w^{T}_{q} h_{k} + b_{q}\right);
 \end{align}
 %
-This is then split to produce outputs
+where the outputs \(s_{x}, t_{x}, q_{x}\) are of the same dimensionality as
+\(x\), and \(\lambda_{s}, \lambda_{q}\) are trainable parameters.
 %
-\begin{align}
-    s_{x} &= \lambda_{s} \tanh \left( w^{T}_{s} h_{k} + b_{s} \right), \\
-    t_{x} &= w^{T}_{t} h_{k} + b_{t}, \\
-    q_{x} &= \lambda_{q}\tanh\left(w^{T}_{q} h_{k} + b_{q}\right),
-    \label{eq:net_outputs}
-\end{align}
-%
-of the same dimensionality as \(x\), where \(\lambda_{s}, \lambda_{q}\) are
-trainable parameters.
+Note that the shapes of the hidden layers \(h_{k}\) are determined by the sizes
+of each of the weight matrices \(w_{k}^{T}\).
 %
 These outputs are then used to update \(x\), as shown in
 Fig~\ref{subfig:network_fns}.
@@ -442,23 +436,34 @@ Fig~\ref{subfig:network_fns}.
         \end{equation}
     \item Compute the Metropolis-Hastings acceptance
         \begin{equation}
-            A(\xi' | \xi) = 
+            A(\xi^{\ast} | \xi) = 
             \min\left\{1,
-            \frac{p(\xi')}{p(\xi)}\left|\frac{\partial \xi'}{\partial \xi^{T}} \right| \right\}
+            \frac{p(\xi^{\ast})}{p(\xi)}\left|\frac{\partial \xi'}{\partial \xi^{T}} \right| \right\}
             \label{eq:mhar}
         \end{equation}
     \item Evaluate the loss function \(\mathcal{L} \leftarrow
-        \mathcal{L}_{\theta}(\xi', \xi)\), and backpropagate gradients to
-        update weights in network.
+        \mathcal{L}_{\theta}(\xi^{\ast}, \xi)\), and backpropagate to update weight
     \item Evaluate Metropolis-Hastings criteria and assign the next state in
-        the chain according to \(
-        x_{t+1} \leftarrow \begin{cases} 
-            x' \text{ with prob. } A(\xi'|\xi) \\ 
-            x \text{ with prob. } 1 - A(\xi'|\xi)
+        the chain according to
+        \(x_{t+1} \leftarrow \begin{cases}%
+            x^{\ast} \text{ with prob. } A(\xi^{\ast}|\xi) \\
+            x \text{ with prob. } 1 - A(\xi^{\ast}|\xi)
         \end{cases}\).
 \end{enumerate}
 %
 %
+\section{\label{sec:results}Results}
+We can measure the performance of our approach by comparing the integrated
+autocorrelation time against traditional HMC.
+%
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.66\textwidth]{assets/autocorr_vs_beta.pdf}
+    \caption{\label{fig:autocorr} Plot of the integrated autocorrelation time
+    \(\tau_{\mathrm{int}}^{Q}\) of the topological charge.}
+\end{figure}
+%
+
 % Explicitly, if we denote by \(M^{\pm} = \left(\begin{smallmatrix}\Gamma^{\pm} &
 % \cdot \\ \cdot & \Lambda^{\pm}\end{smallmatrix}\right)\), we have that 
 % %
