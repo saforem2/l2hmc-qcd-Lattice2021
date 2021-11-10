@@ -190,14 +190,14 @@ where \(H(\xi) = H(x, v) = S_{\beta}(x) + \frac{1}{2} v^{T} v\) is the
 Hamiltonian of the system.
 %
 We use the \emph{leapfrog integrator} to numerically integrate Hamilton's
-equations \(\xi \rightarrow \xi^{\ast}\)
+equations
 %
 \begin{equation}
     \dot{x} = \frac{\partial H}{\partial v}\quad \text{,} \quad \dot{v} = - \frac{\partial H}{\partial x}
 \end{equation}
 %
-along isoprobability contours of \(H =\text{const.}\) from \((\xi,
-v)\rightarrow (x^{\ast}, v^{\ast})\).
+along iso-probability contours of \(H =\text{const.}\) from \(\xi = (x,
+v)\rightarrow (x^{\ast}, v^{\ast}) = \xi^{\ast}\).
 %
 \subsection{\label{subsec:lfint}Leapfrog Integrator}
 %
@@ -228,12 +228,12 @@ v)\rightarrow (x^{\ast}, v^{\ast})\).
         \end{equation}
         %
     \item At the end of the trajectory, accept or reject the proposal
-        configuration \(\xi^{\ast}\) using the Metropolis-Hastings (MH) test.
+        configuration \(\xi^{\ast}\) using the Metropolis-Hastings (MH) test
         \begin{equation}
             x_{i+1} \leftarrow
             \begin{cases}
                 x^{\ast}\text{ with probability } \acceptProb \\
-                x_{i}\text{ with probability } 1 - A(\xi^{\ast}|\xi),
+                x_{i}\text{ with probability } 1 - A(\xi^{\ast}|\xi).
             \end{cases}
         \end{equation}
 \end{enumerate}
@@ -274,22 +274,24 @@ lattice gauge models.
 %
 \section{\label{sec:l2hmc}Generalizing HMC: LeapfrogLayers}
 %
-In order to preserve the asymptotic behavior of HMC, our update must
+In order to preserve the asymptotic behavior of HMC, our update must be
+explicitly reversible with a tractable Jacobian determinant.
 %
-\begin{enumerate}
-    \item Be invertible / preserve reversibility, i.e. \(p(a\rightarrow b) =
-        p(b\rightarrow a)\)
-    \item Have a tractable Jacobian determinant.
-\end{enumerate}
-%
+% \begin{enumerate}
+%     \item Be invertible / preserve reversibility, i.e. \(p(a\rightarrow b) =
+%         p(b\rightarrow a)\)
+%     \item Have a tractable Jacobian determinant.
+% \end{enumerate}
+% %
 To simplify notation, we introduce two functions, \(\Gamma\) \((\Lambda)\) to
 denote the \(v\) \((x)\) updates.
 %
 As in HMC, we follow the general pattern of performing alternating updates of
 \(v\) and \(x\).
 %
-In order to satisfy these requirements, we split the \(x\)-update
-into two parts, sequentially updating complementary subsets using a binary mask
+
+We can ensure our update is reversible by splitting the \(x\)-update into two
+parts and sequentially updating complementary subsets using a binary mask
 \(\mask\) and its complement \(\maskbar\).
 %
 Additionally, we introduce \(d \sim \mathcal{U} (+, -)\), distributed
@@ -417,7 +419,7 @@ Note that the shapes of the hidden layers \(h_{k}\) are determined by the sizes
 of each of the weight matrices \(w_{k}^{T}\).
 %
 These outputs are then used to update \(x\), as shown in
-Fig~\ref{subfig:network_fns}.
+Fig~\ref{fig:networks}.
 
 \subsection{\label{subsec:trainstep}Training Step}
 %
@@ -427,42 +429,58 @@ Fig~\ref{subfig:network_fns}.
         \(\xi_{0} = (x_{0}, v_{0}, \pm)\)
     \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
         initial state sequentially through \(N\) \emph{leapfrog
-        layers}\footnote{
-            We defer the details to Sec~\ref{sec:l2hmc}.
-        } to construct a trajectory
-        \begin{equation}
-            \xi_{0} \rightarrow \xi_{1} \rightarrow \ldots \rightarrow%
-            \xi_{N} = \xi^{\ast}
-        \end{equation}
-    \item Compute the Metropolis-Hastings acceptance
-        \begin{equation}
-            A(\xi^{\ast} | \xi) = 
-            \min\left\{1,
-            \frac{p(\xi^{\ast})}{p(\xi)}\left|\frac{\partial \xi'}{\partial \xi^{T}} \right| \right\}
-            \label{eq:mhar}
-        \end{equation}
+        layers }%\footnote{
+            %We defer the details to Sec~\ref{sec:l2hmc}.
+        %}
+        to construct a trajectory: \(\xi_{0} \rightarrow \xi_{1} \rightarrow
+        \ldots \rightarrow \xi_{N} = \xi^{\ast}\)
+    \item Compute the Metropolis-Hastings acceptance \(A(\xi^{\ast} | \xi) =
+        \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}\left|\frac{\partial
+        \xi'}{\partial \xi^{T}} \right| \right\}\)
     \item Evaluate the loss function \(\mathcal{L} \leftarrow
-        \mathcal{L}_{\theta}(\xi^{\ast}, \xi)\), and backpropagate to update weight
+        \mathcal{L}_{\theta}(\xi^{\ast}, \xi)\), and backpropagate gradients to
+        update weights
     \item Evaluate Metropolis-Hastings criteria and assign the next state in
         the chain according to
         \(x_{t+1} \leftarrow \begin{cases}%
             x^{\ast} \text{ with prob. } A(\xi^{\ast}|\xi) \\
-            x \text{ with prob. } 1 - A(\xi^{\ast}|\xi)
-        \end{cases}\).
+            x \text{ with prob. } 1 - A(\xi^{\ast}|\xi).
+        \end{cases}\)
 \end{enumerate}
-%
 %
 \section{\label{sec:results}Results}
 We can measure the performance of our approach by comparing the integrated
 autocorrelation time against traditional HMC.
 %
+We see in Fig~\ref{fig:autocorr} that our estimate of the integrated
+autocorrelation time is much shorter for the trained model across \(\beta \in
+[2, 7]\).
+%
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=0.66\textwidth]{assets/autocorr_vs_beta.pdf}
-    \caption{\label{fig:autocorr} Plot of the integrated autocorrelation time
-    \(\tau_{\mathrm{int}}^{Q}\) of the topological charge.}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{assets/autocorr_vs_beta.pdf}
+        \caption{\label{fig:autocorr} Plot of the integrated autocorrelation
+        time \(\tau_{\mathrm{int}}^{Q}\) of the topological charge for both HMC
+    (black, dashed line) and the trained model (solid, red line).}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{assets/plaqsf_beta.pdf}
+        \caption{\label{fig:plaqsf_beta}Deviation in the average plaquette vs
+        leapfrog step.}
+    \end{subfigure}
 \end{figure}
 %
+To better understand how these transformations effect the HMC update, we can
+look at how various quantities evolve over the course of a trajectory, as shown
+in Fig~\ref{fig:ridgeplots}.
+%
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
+    \caption{\label{fig:ridgeplots}Evolution of the density of lattice
+    observables over the course of a trajectory.}
+\end{figure}
 
 % Explicitly, if we denote by \(M^{\pm} = \left(\begin{smallmatrix}\Gamma^{\pm} &
 % \cdot \\ \cdot & \Lambda^{\pm}\end{smallmatrix}\right)\), we have that 
