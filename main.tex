@@ -23,6 +23,9 @@
 \newcommand{\mask}{\textcolor{blue}{{m}}}
 \newcommand{\maskbar}{\textcolor{red}{\bar{m}}}
 
+\newcommand{\xm}{\textcolor{blue}{{x}}}
+\newcommand{\xmbar}{\textcolor{red}{\bar{x}}}
+
 \newcommand{\xmask}{\textcolor{blue}{{x}_{m}}}
 \newcommand{\xmaskbar}{\textcolor{red}{x_{\bar{m}}}}
 
@@ -161,19 +164,16 @@ This can be seen by introducing the \emph{tunneling rate}\footnote{As measured
 between subsequent states in our chain \(i\), \(i+1\).}
 %
 \begin{equation}
-    \delta Q \equiv \left|Q_{i+1} - Q_{i}\right| \in \mathbb{Z}.
+    \delta Q \equiv \left|Q_{i+1} - Q_{i}\right| \in \mathbb{Z},
 \end{equation}
 %
-This quantity serves as a measure for how efficiently our chain is able to jump
+which serves as a measure for how efficiently our chain is able to jump
 (tunnel) between sectors of distinct topological charge.
 %
 From Fig~\ref{fig:qfreezing}, we can see that \(\delta Q\rightarrow 0\) as
 \(\beta\rightarrow \infty\).
 %
 \section{\label{sec:hmc}Hamiltonian Monte Carlo (HMC)}
-%
-% We first briefly review the ideas of the Hamiltonian Monte Carlo (HMC)
-% algorithm and highlight some of the issues faced with this approach.
 %
 The Hamiltonian Monte Carlo algorithm begins by introducing a fictitious
 momentum \(v \sim \mathcal{N} (0, \mathbbm{1})\) distributed independently of
@@ -183,7 +183,7 @@ This allows us to write the joint target density of the \(\xi \equiv (x, v)\)
 system as
 %
 \begin{equation}
-    p(x, v) = p(x) \cdot p(v) = e^{-S_{\beta}(x)}\cdot e^{-v^{T} v / 2} = e^{-\mathcal{H}(x, v)}
+    p(x, v) = p(x) \cdot p(v) = e^{-S_{\beta}(x)}\cdot e^{-v^{T} v / 2} = e^{-\mathcal{H} (x, v)}
 \end{equation}
 %
 where \(\mathcal{H}(\xi) = \mathcal{H}(x, v) = S_{\beta}(x) + \frac{1}{2} v^{T}
@@ -316,24 +316,26 @@ Explicitly, we can write this series of updates as\footnote{%
 }
 %
 \begin{align}
-    \mathbf{(1.)}\,\,\,\, v' 
-        &= \Gamma^{\pm}\left[v;\, \zeta_{v} \right] \\
-    \mathbf{(2.)}\,\,\,\, x' 
-        &= \mask \odot x + \maskbar \odot \Lambda^{\pm} [\xmaskbar; \zeta_{\bar{x}}] \\
-    \mathbf{(3.)}\,\, x'' 
-        &= \maskbar \odot x' + \mask \odot \Lambda^{\pm} [\xmask; \zeta_{x'}] \\
-    \mathbf{(4.)}\,\, v'' 
-        &= \Gamma^{\pm} [v', \zeta_{v'}]
+    \nonumber
+    \textbf{(a.)}\,\,\,\, v' 
+        \gets \Gamma^{\pm}\left[v;\, \zeta_{v} \right]\hspace{75pt}
+    \textbf{(b.)}\,\,\,\, x' 
+        &\gets \mask \odot x + \maskbar \odot \Lambda^{\pm} [\xmaskbar; \zeta_{\bar{x}}] \\
+    \nonumber
+    \textbf{(c.)}\,\, x'' 
+        \gets \maskbar \odot x' + \mask \odot \Lambda^{\pm} [\xmask; \zeta_{x'}] \quad
+    \textbf{(d.)}\,\, v'' 
+        &\gets \Gamma^{\pm} [v', \zeta_{v'}]
 \end{align}
 %
-where \(\zeta_{\bar{x}} = [\maskbar \odot x, v]\), \(\zeta_{x} = [\mask\odot x,
+where \(\zeta_{\bar{x}} = [\maskbar\odot x, v]\), \(\zeta_{x} = [\mask \odot x,
 v]\) \((\zeta_{v} = [x, \partial_{x} S(x)])\) is independent of \(x\) \((v)\)
 and is passed as input to the update functions \(\Lambda^{\pm}\)
 \((\Gamma^{\pm})\).
 %
-\begin{figure}
+\begin{figure}[htpb]
     \centering
-    \begin{subfigure}[b]{0.4\textwidth}
+    \begin{subfigure}[b]{0.41\textwidth}
         \includegraphics[width=\textwidth]{assets/update_steps.pdf}
         \caption{\label{subfig:updates}Generalized leapfrog update.}
     \end{subfigure}
@@ -343,15 +345,15 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
         \caption{\label{subfig:lfupdate}Schematic diagram showing the data flow
         through a leapfrog layer.}
     \end{subfigure}
-    \vspace{1em}
-    \begin{subfigure}[b]{\textwidth}
+    % \vspace{1em}
+    \begin{subfigure}[t]{\textwidth}
         \includegraphics[width=\textwidth]{assets/network_functions.pdf}
         \caption{\label{subfig:network_fns}Detailed view of the first two steps
-        in Fig~\ref{subfig:updates}.}
+        in Fig~\ref{subfig:updates}. Note that \(k\) indexes the leapfrog step
+    along our trajectory.}
     \end{subfigure}
     \caption{\label{fig:networks}Various illustrations of the generalized
-        leapfrog update. Note that \(k\) indexes the leapfrog step along our
-    trajectory.}
+    leapfrog update.}
 \end{figure}
 %
 %     of the leapfrog layer used
@@ -391,9 +393,10 @@ for the forward \((d = +)\) direction, \(\Lambda^{+}[\xmaskbar;
 %
 For simplicity, we describe the data flow through a single leapfrog layer,
 %
-which takes as input \(\zeta_{\bar{x}} = (\xmaskbar, v)\). For the 2D \(U(1)\)
-model, the gauge links are encoded as \([\cos(x), \sin(x)]\) for \(x \in [-\pi,
-\pi]\).
+which takes as input \(\zeta_{\bar{x}} = (\xmaskbar, v)\).
+%
+For the 2D \(U(1)\) model, the gauge links are encoded as \([\cos(x),
+\sin(x)]\) for \(x \in [-\pi, \pi]\).
 %
 Explicitly\footnote{
     Here \(\sigma(\cdot)\) is a generic nonlinear activation function.
@@ -448,15 +451,6 @@ training procedure.
 For completeness, the details of an individual training step are summarized in
 Sec~\ref{subsubsec:trainstep}.
 %
-\subsubsection{\label{subsubsec:annealing}Annealing Schedule}
-As an additional tool to help improve the quality of the trained sampler, we
-introduce during the training phase an \emph{annealing schedule}:
-\(\{\gamma_{t}\} = \{\gamma_{0}, \gamma_{1}, \ldots, \gamma_{N}\}\), where \(\gamma_{0} < \gamma_{1} < \cdots < \gamma_{N} \equiv 1\) and \(|\gamma_{i+1} - \gamma_{i}| \ll 1\).
-%
-For \(\|\gamma\| < 1\), this helps to rescale (shrink) the energy barriers
-between isolated modes, and our target distribution becomes \(p_{t}(x) \propto
-e^{-\gamma_{t} S(x)}\) for \(t = 0, 1, \ldots, N\).
-%
 \subsubsection{\label{subsubsec:trainstep}Train Step}
 %
 \begin{enumerate}
@@ -484,6 +478,15 @@ e^{-\gamma_{t} S(x)}\) for \(t = 0, 1, \ldots, N\).
         \end{cases}\)
 \end{enumerate}
 %
+\subsubsection{\label{subsubsec:annealing}Annealing Schedule}
+As an additional tool to help improve the quality of the trained sampler, we
+introduce during the training phase an \emph{annealing schedule}:
+\(\{\gamma_{t}\} = \{\gamma_{0}, \gamma_{1}, \ldots, \gamma_{N}\}\), where \(\gamma_{0} < \gamma_{1} < \cdots < \gamma_{N} \equiv 1\) and \(|\gamma_{i+1} - \gamma_{i}| \ll 1\).
+%
+For \(\|\gamma\| < 1\), this helps to rescale (shrink) the energy barriers
+between isolated modes, and our target distribution becomes \(p_{t}(x) \propto
+e^{-\gamma_{t} S(x)}\) for \(t = 0, 1, \ldots, N\).
+%
 \section{\label{sec:results}Results}
 We can measure the performance of our approach by comparing the integrated
 autocorrelation time against traditional HMC.
@@ -496,27 +499,29 @@ autocorrelation time is much shorter for the trained model across \(\beta \in
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \includegraphics[width=\textwidth]{assets/autocorr_vs_beta.pdf}
-        \caption{\label{fig:autocorr} Plot of the integrated autocorrelation
-        time \(\tau_{\mathrm{int}}^{Q}\) of the topological charge for both HMC
-    (black, dashed line) and the trained model (solid, red line).}
+        \caption{\label{fig:autocorr} The integrated autocorrelation
+        time \(\tau_{\mathrm{int}}^{Q}\) vs \(\beta\)}
+    %     of the topological charge for both HMC
+    % (black, dashed line) and the trained model (solid, red line).}
     \end{subfigure}
+    \hfill
     \begin{subfigure}[t]{0.49\textwidth}
-        \includegraphics[width=\textwidth]{assets/plaqsf_beta.pdf}
+        \includegraphics[width=\textwidth]{assets/plaqsf_leapfrog.pdf}
         \caption{\label{fig:plaqsf_beta}Deviation in the average plaquette vs
-        leapfrog step.}
+        leapfrog step. }
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
+        \caption{\label{fig:ridgeplots}Illustration of how different quantities
+            change during the generalized leapfrog update, the variation in the average
+            plaquette (left), the real-valued topological charge (middle) and the effective
+        energy (right).}
     \end{subfigure}
 \end{figure}
 %
 To better understand how these transformations effect the HMC update, we can
-look at how various quantities evolve over the course of a trajectory, as shown
+look at how various quantities change over the course of a trajectory, as shown
 in Fig~\ref{fig:ridgeplots}.
-%
-\begin{figure}[htpb]
-    \centering
-    \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
-    \caption{\label{fig:ridgeplots}Evolution of the density of lattice
-    observables over the course of a trajectory.}
-\end{figure}
 %
 
 We see from the plot of \(\mathcal{H} - \sum \log | \mathcal{J} |\) in
@@ -524,7 +529,10 @@ Fig~\ref{fig:ridgeplots} (right) that the trained sampler artificially
 increases the energy towards the middle of the trajectory.
 %
 This is analogous to reducing the coupling \(\beta\) during the trajectory, as
-can be seen in Fig~\ref{fig:plaqsf_beta}.
+can be seen\footnote{%
+    Note the trajectories have been shifted to be centered around their
+    midpoints.
+} in Fig~\ref{fig:plaqsf_beta}.
 %
 By looking at the variation in the average plaquette\footnote{%
     Here \(x^{\ast}_{P}\) denotes the expected value in the infinite volume limit.
