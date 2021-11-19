@@ -20,6 +20,9 @@
 \definecolor{blue}{HTML}{007fff}
 \definecolor{red}{HTML}{FF2052}
 
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\p}{\mathbf{v}}
+
 \newcommand{\mask}{\textcolor{blue}{{m}}}
 \newcommand{\maskbar}{\textcolor{red}{\bar{m}}}
 
@@ -37,6 +40,10 @@
 \newcommand{\gradS}{\partial_{x} S(x)}
 \newcommand{\acceptProb}{%
             A(\xi^{\ast}|\xi) \equiv \min\left\{1,
+            \frac{p(\xi^{\ast})}{p(\xi)}\right\}
+    }
+\newcommand{\acceptProbJ}{%
+            A(\xi^{\ast}|\xi) \equiv \min\left\{1,
             \frac{p(\xi^{\ast})}{p(\xi)}%
         \left|\frac{\partial \xi^{\ast}}{\partial \xi^{T}}\right|\right\}
     }
@@ -47,11 +54,13 @@
 % \ShortTitle{A Trainable Framework for effective Topological Sampling}
 
 \author*[a]{Sam Foreman}
-\author[a]{Xiao-Yong Jin}
-\author[a]{James C. Osborn}
+\author[a,b]{Xiao-Yong Jin}
+\author[a,b]{James C. Osborn}
 
-\affiliation[a]{Argonne National Laboratory,\\
-  Lemont, IL}
+\affiliation[a]{Leadership Computing Facility, Argonne National Laboratory,\\
+  Lemont, IL, USA}
+\affiliation[b]{Computational Science Division, Argonne National Laboratory,\\
+  Lemont, IL, USA}
 
 % \affiliation[b]{Department, University,\\
 % Street number, City, Country}
@@ -63,7 +72,7 @@
 \abstract{
     We introduce LeapfrogLayers, an invertible neural network architecture that
     can be trained to efficiently sample the topology of a 2D $U(1)$ lattice
-    gauge theory. 
+    gauge theory.
     %
     We show an improvement in the integrated autocorrelation time of the
     topological charge when compared with traditional HMC, and propose methods
@@ -85,32 +94,38 @@
 %
 \marginpar{\textcolor{red}{Background}}
 %
-One of the major goals of lattice field theory calculations is to evaluate
+%One of the major goals of lattice field theory calculations is to evaluate
+The main task in lattice field theory calculations is to evaluate
 integrals of the form
 %
 \begin{equation}
-    \langle \mathcal{O} \rangle \propto \int \left[ \mathcal{D} x \right] \mathcal{O}(x) p(x),
+  \langle \mathcal{O} \rangle \propto
+  \int \left[ \mathcal{D} \x \right] \mathcal{O}(\x) p(\x),
     \label{eq:density_integral}
 \end{equation}
 %
-for some target distribution \(p(x)\propto e^{-S(x)}\).
+for some multivariate target distribution \(p(\x)\propto e^{-S(\x)}/Z\).
 %
 We can approximate the integral using Markov Chain Monte Carlo (MCMC) sampling
 techniques.
 %
-This is done by sequentially generating a chain of configurations \(\{x_{1},
-x_{2}, \ldots x_{N}\}\), with \(x_{i} \sim p(x)\) and averaging the value of
-the function \(\mathcal{O}(x)\) over the chain.
+This is done by sequentially generating a chain of configurations \(\{\x_{1},
+\x_{2}, \ldots \x_{N}\}\), with \(\x_{i} \sim p(\x)\) and averaging the value of
+the function \(\mathcal{O}(\x)\) over the chain
+\begin{equation}
+  \overline{\mathcal{O}} = \frac{1}{N} \sum_{n=1}^{N} \mathcal{O}(\x_n)  .
+\end{equation}
 %
-Accounting for correlations between states in our chain, the sampling variance
+Accounting for correlations between states in the chain, the sampling variance
 of this esimator is given by
 %
 \begin{equation}
-    \sigmaup^{2} = \frac{\tau_{\mathcal{O}}^{\mathrm{int}}}{N}\sum_{n=1}^{N} \mathrm{Var}\left[\mathcal{O}(x)\right]
+  \sigmaup^{2} = \frac{\tau_{\mathcal{O}}^{\mathrm{int}}}{N}\sum_{n=1}^{N}
+  \left[ \mathcal{O}(\x_n) - \overline{\mathcal{O}} \right]^2
 \end{equation}
 %
 % TODO: Elaborate on this
-where \(\tau_{\mathrm{int}}^{\mathcal{O}}\) is the integrated autocorrelation
+where \(\tau^{\mathrm{int}}_{\mathcal{O}}\) is the integrated autocorrelation
 time.
 %
 This quantity can be interpreted as the additional time required for
@@ -122,91 +137,95 @@ these induced correlations to become negligible.
     \vspace{-\baselineskip}
     \centering
     \includegraphics[width=0.52\textwidth]{assets/qfreezing.pdf}
-    \caption{\label{fig:qfreezing}Illustration of the topological charge \(Q\)
-    freezing as \(\beta : 2 \rightarrow 7\) for traditional HMC.}
+    \caption{\label{fig:qfreezing}Illustration of the topological charge,
+      \(Q_{\mathbb{Z}}\), freezing as \(\beta : 2 \rightarrow 7\) for traditional HMC.}
 \end{wrapfigure}
 %
 The ability to efficiently generate independent configurations is currently
 a major bottleneck for lattice simulations.
 %
-In this work we consider a \(U(1)\) gauge model on a 2D lattice with periodic
-boundary conditions.
+In this work we consider a \(U(1)\) gauge model on a 2D periodic lattice.
 %
-The theory is defined in terms of the link variables \(U_{\mu}(x) = e^{i
-x_{\mu}(n)} \in U(1)\) with \(x_{\mu}(n) \in [-\pi, \pi]\).
+The theory is defined in terms of the link variables
+\(U_{\mu}(x) = e^{i x} \in U(1)\) with \(x \in [-\pi, \pi)\).
 %
-Our target distribution is given by \(p(x)\propto e^{-S_{\beta}(x)}\), where
-\(S_{\beta}(x)\) is the Wilson action
+Our target distribution is given by \(p(\x)\propto e^{-S_{\beta}(\x)}\), where
+\(S_{\beta}(\x)\) is the Wilson action
 %
 \begin{align}
-    S_{\beta}(x) &= \beta \sum_{P} 1 - \cos{x_{P}}, \text{    and}\\
-    x_{P} &\equiv \big[x_{\mu}(n) + x_{\nu}(n + \hat{\mu})\nonumber
-          % \quad\quad\,\, 
-      - x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)\big],
+  S_{\beta}(\x) &= \beta \sum_{P} 1 - \cos{x_{P}} \\
+  x_{P} &\equiv x_{\mu}(n) + x_{\nu}(n + \hat{\mu})
+    - x_{\mu}(n+\hat{\nu}) - x_{\nu}(n) ,
 \end{align}
 %
-is the sum of the gauge variables around the elementary plaquette.
+defined in terms of the sum of the gauge variables around the elementary plaquette
+starting at site $n$ of the lattice.
 %
 For a given lattice configuration, we can calculate the topological charge \(Q
 \in \mathbb{Z}\) using
 %
-\begin{align*}
+\begin{align}
     Q_{\mathbb{Z}} &= \frac{1}{2\pi}\sum_{P}\left\lfloor x_{P} \right\rfloor,\text{ where } \\
     \left\lfloor x_{P} \right\rfloor &\equiv x_{P} - 2\pi
     \left\lfloor\frac{x_{P}+\pi}{2\pi}\right\rfloor.
-\end{align*}
+\end{align}
 %
 As \(\beta \rightarrow \infty\), the \(Q_{\mathbb{Z}} = 0\) mode becomes
 dominant and we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
 durations of the simulation.
 %
 
-This can be seen by introducing the \emph{tunneling rate}\footnote{As measured
+This freezing can be quantatively measuerd by introducing the
+\emph{tunneling rate}\footnote{As measured
 between subsequent states in our chain \(i\), \(i+1\).}
 %
 \begin{equation}
-    \delta Q \equiv \left|Q_{i+1} - Q_{i}\right| \in \mathbb{Z},
+  \delta Q_{\mathbb{Z},i} \equiv \left|Q_{\mathbb{Z},i+1} - Q_{\mathbb{Z},i}\right|
+    \in \mathbb{Z},
 \end{equation}
 %
 which serves as a measure for how efficiently our chain is able to jump
 (tunnel) between sectors of distinct topological charge.
 %
-From Fig~\ref{fig:qfreezing}, we can see that \(\delta Q\rightarrow 0\) as
+From Figure \ref{fig:qfreezing}, we can see that
+\(\overline{\delta Q}_{\mathbb{Z}} \rightarrow 0\) as
 \(\beta\rightarrow \infty\).
 %
 \section{\label{sec:hmc}Hamiltonian Monte Carlo (HMC)}
 %
 The Hamiltonian Monte Carlo algorithm begins by introducing a fictitious
-momentum \(v \sim \mathcal{N} (0, \mathbbm{1})\) distributed independently of
-\(x\).
+momentum, \(v\), for each coordinate varible, $x$, typically taken
+from an independent normal distribution.
 %
-This allows us to write the joint target density of the \(\xi \equiv (x, v)\)
+This allows us to write the joint target density of the \(\xi \equiv (\x, \p)\)
 system as
 %
 \begin{equation}
-    p(x, v) = p(x) \cdot p(v) = e^{-S_{\beta}(x)}\cdot e^{-v^{T} v / 2} = e^{-\mathcal{H} (x, v)}
+    p(\x, \p) = p(\x) p(\p) = e^{-S_{\beta}(\x)} e^{-\p^2 / 2} = e^{-\mathcal{H} (\x, \p)}
 \end{equation}
 %
-where \(\mathcal{H}(\xi) = \mathcal{H}(x, v) = S_{\beta}(x) + \frac{1}{2} v^{T}
-v\) is the Hamiltonian of the system.
+where \(\mathcal{H}(\xi) = \mathcal{H}(\x, \p) = S_{\beta}(\x) + \frac{1}{2} \p^2
+\) is the Hamiltonian of the system.
 %
-We use the \emph{leapfrog integrator} to numerically integrate Hamilton's
+We use the \emph{leapfrog integrator} to approximately numerically integrate Hamilton's
 equations
 %
 \begin{equation}
-    \dot{x} = \frac{\partial \mathcal{H}}{\partial v}\quad \text{,} \quad
-    \dot{v} = - \frac{\partial \mathcal{H}}{\partial x}
+    \dot{\x} = \frac{\partial \mathcal{H}}{\partial \p}\quad \text{,} \quad
+    \dot{\p} = - \frac{\partial \mathcal{H}}{\partial \x}
 \end{equation}
 %
-along iso-probability contours of \(\mathcal{H} =\text{const.}\) from \(\xi = (x,
-v)\rightarrow (x^{\ast}, v^{\ast}) = \xi^{\ast}\).
+along iso-probability contours of \(\mathcal{H} =\text{const.}\)
+from \(\xi = (\x,\p)\rightarrow (\x^{\ast}, \p^{\ast}) = \xi^{\ast}\).
+The error in this integration is then corrected by a Metropolis-Hastings (MH)
+accept/reject step.
 %
 \subsection{\label{subsec:lfint}Leapfrog Integrator}
 %
 \begin{enumerate}
-    \item Starting from \(x_{0}\), resample the momentum \(v_{0}\sim
+    \item Starting from \(\x_{i}\), resample the momentum \(\p_{i}\sim
         \mathcal{N} (0, \mathbbm{1})\) and construct the state \(\xi =
-        (x, v)\).
+        (\x_i, \p_i)\).
     \item Generate a \emph{proposal configuration} \(\xi^{\ast}\) by
         integrating \(\dot\xi\) along \(\mathcal{H} = \mathrm{const.}\)
         for \(N\) leapfrog steps.
@@ -216,31 +235,31 @@ v)\rightarrow (x^{\ast}, v^{\ast}) = \xi^{\ast}\).
             \xi_{N} \equiv \xi^{\ast},
         \end{equation}
         where a single leapfrog step \(\xi_{i} \rightarrow \xi_{i+1}\) above
-        consists of: 
+        consists of:
         %
         \begin{equation}
             \textbf{ (a.) }%
-              \tilde{v}\leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x),
+              \p'\leftarrow \p - \frac{\varepsilon}{2}\partial_{\x} S(\x),
             \quad\quad
             \textbf{ (b.) }%
-              x' \leftarrow x + \varepsilon \tilde{v},
+              \x' \leftarrow \x + \varepsilon \p',
             \quad\quad
             \textbf{ (c.) }%
-              v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x).
+              \p'' \leftarrow \p' - \frac{\varepsilon}{2}\partial_{\x} S(\x).
         \end{equation}
         %
     \item At the end of the trajectory, accept or reject the proposal
-        configuration \(\xi^{\ast}\) using the Metropolis-Hastings (MH) test
+        configuration \(\xi^{\ast}\) using the MH test
         \begin{equation}
-            x_{i+1} \leftarrow
+            \x_{i+1} \leftarrow
             \begin{cases}
-                x^{\ast}\text{ with probability } \acceptProb \\
-                x_{i}\text{ with probability } 1 - A(\xi^{\ast}|\xi).
+                \x^{\ast}\text{ with probability } \acceptProb \\
+                \x_{i}\text{ with probability } 1 - A(\xi^{\ast}|\xi).
             \end{cases}
         \end{equation}
 \end{enumerate}
 %
-An illustration of this procedure can be seen in Fig~\ref{fig:hmc}.
+An illustration of this procedure can be seen in Figure \ref{fig:hmc}.
 %
 \begin{figure}[htpb]
     \centering
@@ -286,18 +305,18 @@ explicitly reversible with a tractable Jacobian determinant.
 % \end{enumerate}
 % %
 To simplify notation, we introduce two functions, \(\Gamma\) \((\Lambda)\) to
-denote the \(v\) \((x)\) updates.
+denote the \(\p\) \((\x)\) updates.
 %
 As in HMC, we follow the general pattern of performing alternating updates of
-\(v\) and \(x\).
+\(\p\) and \(\x\).
 %
 
-We can ensure our update is reversible by splitting the \(x\)-update into two
+We can ensure our update is reversible by splitting the \(\x\) update into two
 parts and sequentially updating complementary subsets using a binary mask
 \(\mask\) and its complement \(\maskbar\).
 %
 As in~\cite{2017arXiv171109268L,Foreman:2021ixr}, we introduce \(d \sim
-\mathcal{U} (+, -)\), distributed independently of both \(x\) and \(v\), to
+\mathcal{U} (+, -)\), distributed independently of both \(\x\) and \(\p\), to
 determine the ``direction'' of our update\footnote{%
   As indicated by the superscript \(\pm\) on \(\Gamma^{\pm}, \Lambda^{\pm}\) in
   the update functions.
@@ -307,30 +326,30 @@ Here, we associate \(+\) \((-)\) with the forward (backward) direction and note
 that running sequential updates in opposite directions has the effect of
 inverting the update.
 %
-We denote the complete state by \(\xi = (x, v, \pm)\), with target density
-given by \(p(\xi) = p(x)\cdot p(v)\cdot p(\pm)\).
+We denote the complete state by \(\xi = (\x, \p, \pm)\), with target density
+given by \(p(\xi) = p(\x) p(\p) p(\pm)\).
 %
 
 Explicitly, we can write this series of updates as\footnote{%
-  Here we denote by \(\xmask = \mask \odot x\) and 
-  \(\xmaskbar = \maskbar \odot x\) with \(\mathbbm{1} = \mask + \maskbar\).
+  Here we denote by \(\xmask = \mask \odot \x\) and 
+  \(\xmaskbar = \maskbar \odot \x\) with \(\mathbbm{1} = \mask + \maskbar\).
 }
 %
 \begin{align}
     \nonumber
-    \textbf{(a.)}\,\,\,\, v' 
-        \gets \Gamma^{\pm}\left[v;\, \zeta_{v} \right]\hspace{75pt}
-    \textbf{(b.)}\,\,\,\, x' 
-        &\gets \mask \odot x + \maskbar \odot \Lambda^{\pm} [\xmaskbar; \zeta_{\bar{x}}] \\
+    \textbf{(a.)}\,\,\, \p'
+        \gets \Gamma^{\pm}\left[\p;\, \zeta_{\p} \right]\hspace{80pt}
+    &\textbf{(b.)}\,\,\, \x'
+        \gets \mask \odot \x + \maskbar \odot \Lambda^{\pm} [\xmaskbar; \zeta_{\bar{\x}}] \\
     \nonumber
-    \textbf{(c.)}\,\, x'' 
-        \gets \maskbar \odot x' + \mask \odot \Lambda^{\pm} [\xmask; \zeta_{x'}] \quad
-    \textbf{(d.)}\,\, v'' 
-        &\gets \Gamma^{\pm} [v', \zeta_{v'}]
+    \textbf{(c.)}\,\, \x''
+        \gets \maskbar \odot \x' + \mask \odot \Lambda^{\pm} [\xmask; \zeta_{\x'}] \quad
+    &\textbf{(d.)}\,\, \p''
+        \gets \Gamma^{\pm} [\p', \zeta_{\p'}]
 \end{align}
 %
-where \(\zeta_{\bar{x}} = [\maskbar\odot x, v]\), \(\zeta_{x} = [\mask \odot x,
-v]\) \((\zeta_{v} = [x, \partial_{x} S(x)])\) is independent of \(x\) \((v)\)
+where \(\zeta_{\bar{\x}} = [\maskbar\odot \x, \p]\), \(\zeta_{\x} = [\mask \odot \x,
+\p]\) \((\zeta_{\p} = [\x, \partial_{\x} S(\x)])\) is independent of \(\x\) \((\p)\)
 and is passed as input to the update functions \(\Lambda^{\pm}\)
 \((\Gamma^{\pm})\).
 %
@@ -386,52 +405,53 @@ complicated target distributions in high-dimensional spaces ~\cite{%
 }.
 
 Note that we maintain separate networks \(\Gamma\), \(\Lambda\) with
-identical architectures for updating \(v\) and \(x\), respectively.
+identical architectures for updating \(\p\) and \(\x\), respectively.
 %
-Without loss of generality, we describe below the details of the \(x\)-update
+Without loss of generality, we describe below the details of the \(\x\) update
 for the forward \((d = +)\) direction, \(\Lambda^{+}[\xmaskbar;
-\zeta_{\bar{x}}]\)\footnote{
+\zeta_{\bar{\x}}]\)\footnote{
     To get the update for the \(d=-\) direction, we invert the
     update functions and run them in the opposite order.
 }.
 %
 For simplicity, we describe the data flow through a single leapfrog layer,
 %
-which takes as input \(\zeta_{\bar{x}} = (\xmaskbar, v)\).
+which takes as input \(\zeta_{\bar{\x}} = (\xmaskbar, \p)\).
 %
 For the 2D \(U(1)\) model, the gauge links are encoded as \([\cos(x),
 \sin(x)]\) for \(x \in [-\pi, \pi]\).
 %
 Explicitly\footnote{
-    Here \(\sigma(\cdot)\) is a generic nonlinear activation function.
+Here \(\sigma(\cdot)\) is a generic nonlinear activation function
+acting independently on the elements of the output vector.
 },
 %
 \begin{align}
-    h_{1} &= \sigma\left(w_{x}^{T} x + w_{v}^{T} v + b_{1}\right)
+    h_{1} &= \sigma\left(w_{x} \x + w_{v} \p + b_{1}\right)
         \quad \in \mathbb{R}^{n_{1}} \\
-    h_{2} &= \sigma\left(w_{2}^{T} h_{1} + b_{2}\right)
+    h_{2} &= \sigma\left(w_{2} h_{1} + b_{2}\right)
         \hspace{0.085\textwidth} \in \mathbb{R}^{n_{2}} \\
     \nonumber \vdots & \\
-    h_{k} &= \sigma\left(w_{k}^{T} h_{k-1} + b_{k-1}\right)
+    h_{k} &= \sigma\left(w_{k} h_{k-1} + b_{k-1}\right)
         \hspace{0.04\textwidth} \in \mathbb{R}^{n_{k}} \Longrightarrow \\
     \nonumber
-    \textbf{  (a.)  } s_{x} = \lambda_{s} \tanh \left( w^{T}_{s} h_{k} + b_{s} \right);
-    &\quad\textbf{  (b.)  } t_{x} = w^{T}_{t} h_{k} + b_{t};
-    \quad\textbf{  (c.)  } q_{x} = \lambda_{q}\tanh\left(w^{T}_{q} h_{k} + b_{q}\right);
+    \textbf{  (a.)  } s_{x} = \lambda_{s} \tanh \left( w_{s} h_{k} + b_{s} \right);
+    &\quad\textbf{  (b.)  } t_{x} = w_{t} h_{k} + b_{t};
+    \quad\textbf{  (c.)  } q_{x} = \lambda_{q}\tanh\left(w_{q} h_{k} + b_{q}\right);
 \end{align}
 %
 where the outputs \(s_{x}, t_{x}, q_{x}\) are of the same dimensionality as
-\(x\), and \(\lambda_{s}, \lambda_{q}\) are trainable parameters.
+\(\x\), and \(\lambda_{s}, \lambda_{q}\) are trainable parameters.
 %
 % Note that the shapes of the hidden layers \(h_{k}\) are determined by the sizes
 % of each of the weight matrices \(w_{k}^{T}\).
 % %
-These outputs are then used to update \(x\), as shown in
+These outputs are then used to update \(\x\), as shown in
 Fig~\ref{fig:networks}.
 
 \subsection{\label{subsec:training}Training Details}
 %
-To train the network, our goal is to train a sampler that efficiently
+Our goal in training the nework is to find a sampler that efficiently
 jumps between different topological charge sectors.
 %
 This can be done by constructing a loss function that maximizes the expected
@@ -441,8 +461,8 @@ squared charge difference between the initial \((\xi)\) and proposal
 Explicitly, we define
 %
 \begin{equation}
-    \mathcal{L}_{\theta}(\xi^{\ast}, \xi) 
-    = A(\xi^{\ast}|\xi) \cdot (Q^{\ast}_{\mathbb{R}} - Q_{\mathbb{R}})^{2}
+    \mathcal{L}_{\theta}(\xi^{\ast}, \xi)
+    = A(\xi^{\ast}|\xi) (Q^{\ast}_{\mathbb{R}} - Q_{\mathbb{R}})^{2}
 \end{equation}
 %
 where \(Q_{\mathbb{R}} = \frac{1}{2\pi}\sum_{P} \sin x_{P} \in \mathbb{R}\) is
@@ -452,15 +472,23 @@ a real-valued approximation of the usual (integer-valued) topological charge
 This ensures that our loss function is continuous which helps to simplify the
 training procedure.
 %
+The acceptance probability
+\begin{equation}
+A(\xi^{\ast} | \xi) =
+\min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)} \mathcal{J}(\xi^{\ast},\xi) \right\}
+\end{equation}
+now includes an extra Jacobian factor $\mathcal{J}(\xi^{\ast},\xi)$
+which allows the inclusion of non-symplectic update steps ...
+%
 For completeness, the details of an individual training step are summarized in
 Sec~\ref{subsubsec:trainstep}.
 %
 \subsubsection{\label{subsubsec:trainstep}Training Step}
 %
 \begin{enumerate}
-    \item Resample \(v \sim \mathcal{N} (0, \mathbbm{1})\),
+    \item Resample \(\p \sim \mathcal{N} (0, \mathbbm{1})\),
         \(d \sim \mathcal{U} (+, -)\), and construct initial state
-        \(\xi = (x, v, \pm)\)
+        \(\xi = (\x, \p, \pm)\)
     \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
         initial state sequentially through \(N\) \emph{leapfrog
         layers }%\footnote{
