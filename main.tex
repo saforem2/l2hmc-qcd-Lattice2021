@@ -121,7 +121,7 @@ these induced correlations to become negligible.
 \begin{wrapfigure}[23]{r}[40pt]{0.52\textwidth}
     \vspace{-\baselineskip}
     \centering
-    \includegraphics[width=0.53\textwidth]{assets/qfreezing.pdf}
+    \includegraphics[width=0.52\textwidth]{assets/qfreezing.pdf}
     \caption{\label{fig:qfreezing}Illustration of the topological charge \(Q\)
     freezing as \(\beta : 2 \rightarrow 7\) for traditional HMC.}
 \end{wrapfigure}
@@ -205,14 +205,14 @@ v)\rightarrow (x^{\ast}, v^{\ast}) = \xi^{\ast}\).
 %
 \begin{enumerate}
     \item Starting from \(x_{0}\), resample the momentum \(v_{0}\sim
-        \mathcal{N} (0, \mathbbm{1})\) and construct the state \(\xi_{0} =
-        (x_{0}, v_{0})\).
+        \mathcal{N} (0, \mathbbm{1})\) and construct the state \(\xi =
+        (x, v)\).
     \item Generate a \emph{proposal configuration} \(\xi^{\ast}\) by
         integrating \(\dot\xi\) along \(\mathcal{H} = \mathrm{const.}\)
         for \(N\) leapfrog steps.
         i.e.
         \begin{equation}
-            \xi_{0}\rightarrow \xi_{1}\rightarrow\ldots\rightarrow
+            \xi \rightarrow \xi_{1}\rightarrow\ldots\rightarrow
             \xi_{N} \equiv \xi^{\ast},
         \end{equation}
         where a single leapfrog step \(\xi_{i} \rightarrow \xi_{i+1}\) above
@@ -380,7 +380,7 @@ complicated target distributions in high-dimensional spaces ~\cite{%
     levyGeneralizingHamiltonianMonte2018b,%
     neklyudovOrbitalMCMC2020a,%
     neklyudovInvolutiveMcmcUnifying2020a%
-},
+}.
 
 Note that we maintain separate networks \(\Gamma\), \(\Lambda\) with
 identical architectures for updating \(v\) and \(x\), respectively.
@@ -452,18 +452,18 @@ training procedure.
 For completeness, the details of an individual training step are summarized in
 Sec~\ref{subsubsec:trainstep}.
 %
-\subsubsection{\label{subsubsec:trainstep}Train Step}
+\subsubsection{\label{subsubsec:trainstep}Training Step}
 %
 \begin{enumerate}
     \item Resample \(v \sim \mathcal{N} (0, \mathbbm{1})\),
         \(d \sim \mathcal{U} (+, -)\), and construct initial state
-        \(\xi_{0} = (x_{0}, v_{0}, \pm)\)
+        \(\xi = (x, v, \pm)\)
     \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
         initial state sequentially through \(N\) \emph{leapfrog
         layers }%\footnote{
             %We defer the details to Sec~\ref{sec:l2hmc}.
         %}
-        generate a proposal configuration: \(\xi_{0} \rightarrow \xi_{1}
+        generate a proposal configuration: \(\xi \rightarrow \xi_{1}
         \rightarrow \ldots \rightarrow \xi_{N} = \xi^{\ast}\)
     \item Compute the Metropolis-Hastings acceptance \(A(\xi^{\ast} | \xi) =
         \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}\left|\frac{\partial
@@ -496,7 +496,7 @@ We see in Fig~\ref{fig:autocorr} that our estimate of the integrated
 autocorrelation time is much shorter for the trained model across \(\beta \in
 [2, 7]\).
 %
-\begin{figure}[t]
+\begin{figure}[htpb]
     \centering
     \begin{subfigure}[b]{0.47\textwidth}
         \includegraphics[width=\textwidth]{assets/autocorr_vs_beta.pdf}
@@ -517,23 +517,23 @@ autocorrelation time is much shorter for the trained model across \(\beta \in
         models with different trajectory lengths \(N_{\mathrm{LF}}\), at
     \(\beta = 2, 3, \ldots, 7\)}
     \end{subfigure}
-    % \begin{subfigure}[t]{\textwidth}
-    %     \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
-    %     \caption{\label{fig:ridgeplots}Illustration of how different quantities
-    %         change during the generalized leapfrog update, the variation in the
-    %         average plaquette (left), the real-valued topological charge
-    %     (middle) and the effective energy (right).}
-    % \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
+        \caption{\label{fig:ridgeplots}Illustration of how different quantities
+            change during the generalized leapfrog update, the variation in the
+            average plaquette (left), the real-valued topological charge
+        (middle) and the effective energy (right).}
+    \end{subfigure}
     \caption{\label{fig:observables}Plots of various lattice observables.}
 \end{figure}
 %
-\begin{figure}[htpb]
-    \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
-    \caption{\label{fig:ridgeplots}Illustration of how different quantities
-        change during the generalized leapfrog update, the variation in the
-        average plaquette (left), the real-valued topological charge
-    (middle) and the effective energy (right).}
-\end{figure}
+% \begin{figure}[htpb]
+%     \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
+%     \caption{\label{fig:ridgeplots}Illustration of how different quantities
+%         change during the generalized leapfrog update, the variation in the
+%         average plaquette (left), the real-valued topological charge
+%     (middle) and the effective energy (right).}
+% \end{figure}
 %
 To better understand how these transformations effect the HMC update, we can
 look at how various quantities change over the course of a trajectory, as shown
