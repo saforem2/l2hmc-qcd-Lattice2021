@@ -478,7 +478,9 @@ A(\xi^{\ast} | \xi) =
 \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)} \mathcal{J}(\xi^{\ast},\xi) \right\}
 \end{equation}
 now includes an extra Jacobian factor $\mathcal{J}(\xi^{\ast},\xi)$
-which allows the inclusion of non-symplectic update steps ...
+which allows the inclusion of non-symplectic update steps.
+The Jacobian comes from the $v$ ($x$) scaling term in the $v$ ($x$) update, and
+is easily calculated.
 %
 For completeness, the details of an individual training step are summarized in
 Sec~\ref{subsubsec:trainstep}.
@@ -490,42 +492,39 @@ Sec~\ref{subsubsec:trainstep}.
         \(d \sim \mathcal{U} (+, -)\), and construct initial state
         \(\xi = (\x, \p, \pm)\)
     \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
-        initial state sequentially through \(N\) \emph{leapfrog
+        initial state sequentially through \(N_{\mathrm{LF}}\) \emph{leapfrog
         layers }%\footnote{
             %We defer the details to Sec~\ref{sec:l2hmc}.
         %}
         generate a proposal configuration: \(\xi \rightarrow \xi_{1}
-        \rightarrow \ldots \rightarrow \xi_{N} = \xi^{\ast}\)
+        \rightarrow \ldots \rightarrow \xi_{N_{\mathrm{LF}}} = \xi^{\ast}\)
     \item Compute the Metropolis-Hastings acceptance \(A(\xi^{\ast} | \xi) =
-        \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}\left|\frac{\partial
-        \xi'}{\partial \xi^{T}} \right| \right\}\)
+      \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}
+      \mathcal{J}(\xi^{\ast},\xi) \right\}\)
     \item Evaluate the loss function \(\mathcal{L} \leftarrow
         \mathcal{L}_{\theta}(\xi^{\ast}, \xi)\), and backpropagate gradients to
         update weights
     \item Evaluate Metropolis-Hastings criteria and assign the next state in
         the chain according to
-        \(x_{t+1} \leftarrow \begin{cases}%
-            x^{\ast} \text{ with prob. } A(\xi^{\ast}|\xi) \\
-            x \text{ with prob. } 1 - A(\xi^{\ast}|\xi).
+        \(\x_{t+1} \leftarrow \begin{cases}%
+            \x^{\ast} \text{ with prob. } A(\xi^{\ast}|\xi) \\
+            \x \text{ with prob. } 1 - A(\xi^{\ast}|\xi).
         \end{cases}\)
 \end{enumerate}
 %
-\subsubsection{\label{subsubsec:annealing}Annealing Schedule}
+\subsubsection{\label{subsubsec:annealing}Annealing}
 As an additional tool to help improve the quality of the trained sampler, we
-introduce during the training phase an \emph{annealing schedule}:
-\(\{\gamma_{t}\} = \{\gamma_{0}, \gamma_{1}, \ldots, \gamma_{N}\}\), where \(\gamma_{0} < \gamma_{1} < \cdots < \gamma_{N} \equiv 1\) and \(|\gamma_{i+1} - \gamma_{i}| \ll 1\).
+scale the action during the $N_{\mathrm{T}}$ training steps using the target
+distribution \(p_{t}(x) \propto e^{-\gamma_{t} S(x)}\)
+for \(t = 0, 1, \ldots, N_{\mathrm{T}}\).
+The scale factors, $\gamma_{t}$, monotonically increase according to
+an \emph{annealing schedule} up to $\gamma_{N_{\mathrm{T}}} \equiv 1$,
+with \(|\gamma_{i+1} - \gamma_{i}| \ll 1\).
 %
-For \(\|\gamma\| < 1\), this helps to rescale (shrink) the energy barriers
-between isolated modes, and our target distribution becomes \(p_{t}(x) \propto
-e^{-\gamma_{t} S(x)}\) for \(t = 0, 1, \ldots, N\).
-%
-\section{\label{sec:results}Results}
-We can measure the performance of our approach by comparing the integrated
-autocorrelation time against traditional HMC.
-%
-We see in Fig~\ref{fig:autocorr} that our estimate of the integrated
-autocorrelation time is much shorter for the trained model across \(\beta \in
-[2, 7]\).
+For \(\gamma_i < 1\), this helps to rescale (shrink) the energy
+barriers between isolated modes, allowing the training to experience
+sufficient tunneling even when the final distribution is difficult to
+sample.
 %
 \begin{figure}[htpb]
     \centering
@@ -565,6 +564,14 @@ autocorrelation time is much shorter for the trained model across \(\beta \in
 %         average plaquette (left), the real-valued topological charge
 %     (middle) and the effective energy (right).}
 % \end{figure}
+%
+\section{\label{sec:results}Results}
+We can measure the performance of our approach by comparing the integrated
+autocorrelation time against traditional HMC.
+%
+We see in Fig~\ref{fig:autocorr} that our estimate of the integrated
+autocorrelation time is much shorter for the trained model across \(\beta \in
+[2, 7]\).
 %
 To better understand how these transformations effect the HMC update, we can
 look at how various quantities change over the course of a trajectory, as shown
