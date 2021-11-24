@@ -133,10 +133,10 @@ these induced correlations to become negligible.
 %
 \subsection{\label{subsec:qfreezing}Charge Freezing}
 %
-\begin{wrapfigure}[23]{r}[40pt]{0.52\textwidth}
+\begin{wrapfigure}[19]{r}[36pt]{0.50\textwidth}
     \vspace{-\baselineskip}
     \centering
-    \includegraphics[width=0.52\textwidth]{assets/qfreezing.pdf}
+    \includegraphics[width=0.50\textwidth]{assets/qfreezing.pdf}
     \caption{\label{fig:qfreezing}Illustration of the topological charge,
       \(Q_{\mathbb{Z}}\), freezing as \(\beta : 2 \rightarrow 7\) for traditional HMC.}
 \end{wrapfigure}
@@ -175,9 +175,7 @@ dominant and we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
 durations of the simulation.
 %
 
-This freezing can be quantatively measuerd by introducing the
-\emph{tunneling rate}\footnote{As measured
-between subsequent states in our chain \(i\), \(i+1\).}
+This freezing can be quantatively measured by introducing the \emph{tunneling rate}\footnote{As measured between subsequent states in our chain \(i\), \(i+1\).}
 %
 \begin{equation}
   \delta Q_{\mathbb{Z},i} \equiv \left|Q_{\mathbb{Z},i+1} - Q_{\mathbb{Z},i}\right|
@@ -355,12 +353,12 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
 %
 \begin{figure}[htpb]
     \centering
-    \begin{subfigure}[b]{0.40\textwidth}
+    \begin{subfigure}[t]{0.40\textwidth}
         \includegraphics[width=\textwidth]{assets/update_steps.pdf}
         \caption{\label{subfig:updates}Generalized leapfrog update.}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.56\textwidth}
+    \begin{subfigure}[t]{0.54\textwidth}
         \includegraphics[width=\textwidth]{assets/leapfrog_layer.pdf}
         \caption{\label{subfig:lfupdate}Illustration of the data flow
         through a leapfrog layer.}
