@@ -364,14 +364,15 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
         through a leapfrog layer.}
     \end{subfigure}
     % \vspace{1em}
-    \begin{subfigure}[t]{\textwidth}
+    \begin{subfigure}[t]{0.98\textwidth}
         \includegraphics[width=\textwidth]{assets/network_functions.pdf}
-        \caption{\label{subfig:network_fns}Detailed view of the first two steps
-        in Fig~\ref{subfig:updates}. Note that \(k\) indexes the leapfrog step
-    along our trajectory.}
+        \caption{\label{subfig:network_fns}Detailed view of the update
+        functions \(\Gamma^{+}, \Lambda^{+}\) for the \(k^{\mathrm{th}}\)
+    leapfrog step.}
     \end{subfigure}
-    \caption{\label{fig:networks}Various illustrations of the generalized
-    leapfrog update.}
+    \caption{\label{fig:networks}Illustrations of the generalized
+    leapfrog update. In Fig.~\ref{subfig:updates},\ref{subfig:network_fns}, we
+denote \(\bar{\mathbf{x}}_{k} = \maskbar\odot \mathbf{x}_{k}\).}
 \end{figure}
 %
 %     of the leapfrog layer used
@@ -402,8 +403,8 @@ complicated target distributions in high-dimensional spaces ~\cite{%
     % neklyudovInvolutiveMcmcUnifying2020a%
 }.
 
-Note that we maintain separate networks \(\Gamma\), \(\Lambda\) with
-identical architectures for updating \(\p\) and \(\x\), respectively.
+We maintain separate networks \(\Gamma\), \(\Lambda\) with identical
+architectures for updating \(\p\) and \(\x\), respectively.
 %
 Without loss of generality, we describe below the details of the \(\x\) update
 for the forward \((d = +)\) direction, \(\Lambda^{+}[\xmaskbar;
