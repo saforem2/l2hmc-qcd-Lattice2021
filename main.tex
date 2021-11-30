@@ -511,10 +511,10 @@ tunneling even when the final distribution is difficult to sample.
 \clearpage
 \section{\label{sec:results}Results}
 %
-\begin{wrapfigure}[14]{r}{0.55\textwidth}
+\begin{wrapfigure}[15]{r}{0.58\textwidth}
     \vspace{-\baselineskip}
     \centering
-    \includegraphics[width=0.54\textwidth]{assets/autocorr_vs_beta.pdf}
+    \includegraphics[width=0.58\textwidth]{assets/autocorr_vs_beta.pdf}
     \caption{\label{fig:autocorr}Estimated
     \(\tau_{\mathrm{int}}^{\mathcal{Q}_{\mathbb{R}}}\) vs \(\beta\).}
     %, scaled by \(N_{\mathrm{LF}}\) to account for simulation cost.}
@@ -532,14 +532,15 @@ look at how various quantities change over the course of a trajectory, as shown
 in Fig~\ref{fig:ridgeplots}.
 %
 We see from the plot of \(\mathcal{H} - \sum \log | \mathcal{J} |\) in
-Fig~\ref{fig:ridgeplots} (right) that the trained sampler artificially
+Fig~\ref{fig:ridgeplots} (c.) that the trained sampler artificially
 increases the energy towards the middle of the trajectory.
 %
 This is analogous to reducing the coupling \(\beta\) during the trajectory, as
-can be seen\footnote{%
-    Note the trajectories have been shifted to be centered around their
-    midpoints.
-} in Fig~\ref{fig:plaqsf_beta}.
+can be seen in Fig~\ref{fig:plaqsf_beta}.
+% \footnote{%
+%     % Note the trajectories have been shifted to be centered around their
+%     % midpoints.
+% }
 %
 By looking at the variation in the average plaquette\footnote{%
     Here \(x^{\ast}_{P}\) denotes the expected value in the infinite volume limit.
@@ -554,15 +555,15 @@ Our implementation is open source, and is publicly available on github at
 %
 \begin{figure}[htpb]
     \includegraphics[width=\linewidth]{assets/tint.pdf}
-    \caption{\label{fig:tint}Integrated autocorrelation time for trained
-    models with different trajectory lengths \(N_{\mathrm{LF}}\), at
-\(\beta = 2, 3, \ldots, 7\).}
+    \caption{\label{fig:tint}Comparison of the integrated autocorrelation time
+        for trained models vs HMC with different trajectory lengths,
+    \(N_{\mathrm{LF}}\), at \(\beta = 4, 5, 6, 7\).}
 \end{figure}
 %
 %
 \begin{figure}[htpb]
     \centering
-        \includegraphics[width=\linewidth]{assets/ridgeplots4.pdf}
+        \includegraphics[width=\linewidth]{assets/ridgeplots.pdf}
         \caption{\label{fig:ridgeplots}Illustration of how different quantities
         evolve over a single trajectory.}%
 \end{figure}
