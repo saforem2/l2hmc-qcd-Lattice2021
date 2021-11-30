@@ -131,10 +131,11 @@ these induced correlations to become negligible.
 %
 \subsection{\label{subsec:qfreezing}Charge Freezing}
 %
-\begin{wrapfigure}[19]{r}[36pt]{0.50\textwidth}
+\begin{wrapfigure}[18]{r}[36pt]{0.50\textwidth}
     \vspace{-\baselineskip}
+    \vspace{-\baselineskip}
+    \includegraphics[width=0.47\textwidth]{assets/qfreezing.pdf}
     \centering
-    \includegraphics[width=0.50\textwidth]{assets/qfreezing.pdf}
     \caption{\label{fig:qfreezing}Illustration of the topological charge,
       \(Q_{\mathbb{Z}}\), freezing as \(\beta : 2 \rightarrow 7\) for traditional HMC.}
 \end{wrapfigure}
@@ -150,14 +151,25 @@ The theory is defined in terms of the link variables
 Our target distribution is given by \(p(\x)\propto e^{-S_{\beta}(\x)}\), where
 \(S_{\beta}(\x)\) is the Wilson action
 %
-\begin{align}
-  S_{\beta}(\x) &= \beta \sum_{P} 1 - \cos{x_{P}} \\
-  x_{P} &\equiv x_{\mu}(n) + x_{\nu}(n + \hat{\mu})
-    - x_{\mu}(n+\hat{\nu}) - x_{\nu}(n) ,
-\end{align}
+\begin{equation}
+  S_{\beta}(\x) = \beta \sum_{P} 1 - \cos{x_{P}},
+\end{equation}
 %
-defined in terms of the sum of the gauge variables around the elementary plaquette
-starting at site $n$ of the lattice.
+defined in terms of the sum of the gauge variables around the elementary
+plaquette, \(x_{P} \equiv x_{\mu}(n) + x_{\nu}(n + \hat{\mu}) -
+x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)\), starting at site \(n\) of the
+lattice.\footnote{%
+    Here, the sum \(\sum_{P}\) denotes the sum over all such plaquettes.
+}
+% \begin{align}
+%   S_{\beta}&(\x) = \beta \sum_{P} 1 - \cos{x_{P}} \\
+%   \nonumber
+%   x_{P} &\equiv x_{\mu}(n) + x_{\nu}(n + \hat{\mu})
+%     - x_{\mu}(n+\hat{\nu}) - x_{\nu}(n) 
+% \end{align}
+%
+% defined in terms of the sum of the gauge variables around the elementary plaquette
+% starting at site $n$ of the lattice.
 %
 For a given lattice configuration, we can calculate the topological charge \(Q
 \in \mathbb{Z}\) using
@@ -172,8 +184,9 @@ As \(\beta \rightarrow \infty\), the \(Q_{\mathbb{Z}} = 0\) mode becomes
 dominant and we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
 durations of the simulation.
 %
-
-This freezing can be quantatively measured by introducing the \emph{tunneling rate}\footnote{As measured between subsequent states in our chain \(i\), \(i+1\).}
+This freezing can be quantatively measured by introducing the \emph{tunneling
+rate}\footnote{As measured between subsequent states in our chain \(i\),
+\(i+1\).}
 %
 \begin{equation}
   \delta Q_{\mathbb{Z},i} \equiv \left|Q_{\mathbb{Z},i+1} - Q_{\mathbb{Z},i}\right|
@@ -203,16 +216,17 @@ system as
 where \(\mathcal{H}(\xi) = \mathcal{H}(\x, \p) = S_{\beta}(\x) + \frac{1}{2} \p^2
 \) is the Hamiltonian of the system.
 %
-We use the \emph{leapfrog integrator} to approximately numerically integrate Hamilton's
-equations
+We use the \emph{leapfrog integrator} to approximately numerically integrate
+Hamilton's equations
 %
 \begin{equation}
     \dot{\x} = \frac{\partial \mathcal{H}}{\partial \p}\quad \text{,} \quad
     \dot{\p} = - \frac{\partial \mathcal{H}}{\partial \x}
 \end{equation}
 %
-along iso-probability contours of \(\mathcal{H} =\text{const.}\)
-from \(\xi = (\x,\p)\rightarrow (\x^{\ast}, \p^{\ast}) = \xi^{\ast}\).
+along iso-probability contours of \(\mathcal{H} =\text{const.}\) from \(\xi =
+(\x,\p)\rightarrow (\x^{\ast}, \p^{\ast}) = \xi^{\ast}\).
+%
 The error in this integration is then corrected by a Metropolis-Hastings (MH)
 accept/reject step.
 %
@@ -259,7 +273,7 @@ An illustration of this procedure can be seen in Figure \ref{fig:hmc}.
 %
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=\textwidth]{assets/hmc.pdf}
+    \includegraphics[width=\linewidth]{assets/hmc.pdf}
     \caption{\label{fig:hmc}High-level overview of the HMC algorithm.}
 \end{figure}
 %
@@ -279,27 +293,11 @@ multiple isolated modes.
 This is particularly relevant in the case of sampling topological quantities in
 lattice gauge models.
 %
-%
-% This list of criteria helps to illuminate the qualities we would like our
-% (ideal) sampler to exhibit; namely, we would like for our sampler to: 
-% %
-% \begin{itemize}
-%     \item quickly converge to the true target distribution
-%     \item mix quickly once converged (short autocorrelations)
-%     \item be able to mix across energy levels and isolated modes
-% \end{itemize}
-%
 \section{\label{sec:l2hmc}Generalizing HMC: LeapfrogLayers}
 %
 In order to preserve the asymptotic behavior of HMC, our update must be
 explicitly reversible with a tractable Jacobian determinant.
 %
-% \begin{enumerate}
-%     \item Be invertible / preserve reversibility, i.e. \(p(a\rightarrow b) =
-%         p(b\rightarrow a)\)
-%     \item Have a tractable Jacobian determinant.
-% \end{enumerate}
-% %
 To simplify notation, we introduce two functions, \(\Gamma\) \((\Lambda)\) to
 denote the \(\p\) \((\x)\) updates.
 %
@@ -351,19 +349,19 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
 %
 \begin{figure}[htpb]
     \centering
-    \begin{subfigure}[t]{0.40\textwidth}
-        \includegraphics[width=\textwidth]{assets/update_steps.pdf}
+    \begin{subfigure}[t]{0.40\linewidth}
+        \includegraphics[width=\linewidth]{assets/update_steps.pdf}
         \caption{\label{subfig:updates}Generalized leapfrog update.}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{0.55\textwidth}
-        \includegraphics[width=\textwidth]{assets/leapfrog_layer.pdf}
+    \begin{subfigure}[t]{0.55\linewidth}
+        \includegraphics[width=\linewidth]{assets/leapfrog_layer.pdf}
         \caption{\label{subfig:lfupdate}Illustration of the data flow
         through a leapfrog layer.}
     \end{subfigure}
     % \vspace{1em}
-    \begin{subfigure}[t]{0.98\textwidth}
-        \includegraphics[width=\textwidth]{assets/network_functions.pdf}
+    \begin{subfigure}[t]{\linewidth}
+        \includegraphics[width=\linewidth]{assets/network_functions.pdf}
         \caption{\label{subfig:network_fns}Detailed view of the update
         functions \(\Gamma^{+}, \Lambda^{+}\) for the \(k^{\mathrm{th}}\)
     leapfrog step.}
@@ -372,12 +370,6 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
     leapfrog update. In Fig.~\ref{subfig:updates},\ref{subfig:network_fns}, we
 denote \(\bar{\mathbf{x}}_{k} = \maskbar\odot \mathbf{x}_{k}\).}
 \end{figure}
-%
-%     of the leapfrog layer used
-%     to generate a proposal configuration \(\xi\rightarrow \xi''\) which is
-% then either accepted or rejected.}
-%     which uses invertible neural networks to augment the
-% traditional update.}
 %
 \subsection{\label{subsec:networks}Network Details}
 %
@@ -396,9 +388,6 @@ complicated target distributions in high-dimensional spaces ~\cite{%
     2020arXiv201008047N,%
     2020arXiv200616653N,%
     2020arXiv200600866W%
-    % neklyudovOrbitalMCMC2020a,%
-    % wehenkelYouSayNormalizing2020a,%
-    % neklyudovInvolutiveMcmcUnifying2020a%
 }.
 
 We maintain separate networks \(\Gamma\), \(\Lambda\) with identical
@@ -440,9 +429,6 @@ acting independently on the elements of the output vector.
 where the outputs \(s_{x}, t_{x}, q_{x}\) are of the same dimensionality as
 \(\x\), and \(\lambda_{s}, \lambda_{q}\) are trainable parameters.
 %
-% Note that the shapes of the hidden layers \(h_{k}\) are determined by the sizes
-% of each of the weight matrices \(w_{k}^{T}\).
-% %
 These outputs are then used to update \(\x\), as shown in
 Fig~\ref{fig:networks}.
 
@@ -470,10 +456,12 @@ This ensures that our loss function is continuous which helps to simplify the
 training procedure.
 %
 The acceptance probability
+%
 \begin{equation}
 A(\xi^{\ast} | \xi) =
 \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)} \mathcal{J}(\xi^{\ast},\xi) \right\}
 \end{equation}
+%
 now includes an extra Jacobian factor $\mathcal{J}(\xi^{\ast},\xi)$
 which allows the inclusion of non-symplectic update steps.
 The Jacobian comes from the $v$ ($x$) scaling term in the $v$ ($x$) update, and
@@ -490,10 +478,7 @@ Sec~\ref{subsubsec:trainstep}.
         \(\xi = (\x, \p, \pm)\)
     \item Generate the proposal configuration \(\xi^{\ast}\) by passing the
         initial state sequentially through \(N_{\mathrm{LF}}\) \emph{leapfrog
-        layers }%\footnote{
-            %We defer the details to Sec~\ref{sec:l2hmc}.
-        %}
-        generate a proposal configuration: \(\xi \rightarrow \xi_{1}
+        layers}: \(\xi \rightarrow \xi_{1}
         \rightarrow \ldots \rightarrow \xi_{N_{\mathrm{LF}}} = \xi^{\ast}\)
     \item Compute the Metropolis-Hastings acceptance \(A(\xi^{\ast} | \xi) =
       \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}
@@ -512,24 +497,16 @@ Sec~\ref{subsubsec:trainstep}.
 \subsection{\label{subsec:annealing}Annealing}
 As an additional tool to help improve the quality of the trained sampler, we
 scale the action during the $N_{\mathrm{T}}$ training steps using the target
-distribution \(p_{t}(x) \propto e^{-\gamma_{t} S(x)}\)
-for \(t = 0, 1, \ldots, N_{\mathrm{T}}\).
-The scale factors, $\gamma_{t}$, monotonically increase according to
-an \emph{annealing schedule} up to $\gamma_{N_{\mathrm{T}}} \equiv 1$,
-with \(|\gamma_{i+1} - \gamma_{i}| \ll 1\).
+distribution \(p_{t}(x) \propto e^{-\gamma_{t} S(x)}\) for \(t = 0, 1, \ldots,
+N_{\mathrm{T}}\).
 %
-For \(\gamma_i < 1\), this helps to rescale (shrink) the energy
-barriers between isolated modes, allowing the training to experience
-sufficient tunneling even when the final distribution is difficult to
-sample.
+The scale factors, $\gamma_{t}$, monotonically increase according to an
+\emph{annealing schedule} up to $\gamma_{N_{\mathrm{T}}} \equiv 1$, with
+\(|\gamma_{i+1} - \gamma_{i}| \ll 1\).
 %
-% \begin{figure}[htpb]
-%     \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
-%     \caption{\label{fig:ridgeplots}Illustration of how different quantities
-%         change during the generalized leapfrog update, the variation in the
-%         average plaquette (left), the real-valued topological charge
-%     (middle) and the effective energy (right).}
-% \end{figure}
+For \(\gamma_i < 1\), this helps to rescale (shrink) the energy barriers
+between isolated modes, allowing the training to experience sufficient
+tunneling even when the final distribution is difficult to sample.
 %
 \clearpage
 \section{\label{sec:results}Results}
@@ -576,7 +553,7 @@ Our implementation is open source, and is publicly available on github at
 \href{https://www.github.com/saforem2/l2hmc-qcd}{github.com/saforem2/l2hmc-qcd}.
 %
 \begin{figure}[htpb]
-    \includegraphics[width=\textwidth]{assets/tint.pdf}
+    \includegraphics[width=\linewidth]{assets/tint.pdf}
     \caption{\label{fig:tint}Integrated autocorrelation time for trained
     models with different trajectory lengths \(N_{\mathrm{LF}}\), at
 \(\beta = 2, 3, \ldots, 7\).}
@@ -585,24 +562,17 @@ Our implementation is open source, and is publicly available on github at
 %
 \begin{figure}[htpb]
     \centering
-% \begin{subfigure}[t]{\textwidth}
-    \includegraphics[width=0.9\textwidth]{assets/ridgeplots.pdf}
-    \caption{\label{fig:ridgeplots}Illustration of how different quantities
-    change during the generalized leapfrog update.}%
-    %     , the variation in the
-    %     average plaquette (left), the real-valued topological charge
-    % (middle) and the effective energy (right).}
-% \end{subfigure}
-\end{figure}
-\begin{figure}[htpb]
-    \centering
-    \includegraphics[width=\textwidth]{assets/plaqsf_vs_lf_step_1659.pdf}
-    \caption{\label{fig:plaqsf_beta}Plots showing the deviation in average
-    plaquette vs leapfrog step from the expected value in the infinite
-volume limit}
+        \includegraphics[width=\linewidth]{assets/ridgeplots4.pdf}
+        \caption{\label{fig:ridgeplots}Illustration of how different quantities
+        evolve over a single trajectory.}%
 \end{figure}
 %
-\section{\label{sec:conclusion}Conclusion}
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\linewidth]{assets/plaqsf_vs_lf_step.pdf}
+    \caption{\label{fig:plaqsf_beta}Plots illustrating how the average
+    plaquette\(x_{P}\) deviates from the expected value during a trajectory.}
+\end{figure}
 %
 In this work we have proposed a generalized sampling procedure for HMC that can
 be used for generating gauge configurations in the 2D \(U(1)\) lattice model.
