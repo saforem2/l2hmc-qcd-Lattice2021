@@ -509,7 +509,7 @@ Sec~\ref{subsubsec:trainstep}.
         \end{cases}\)
 \end{enumerate}
 %
-\subsubsection{\label{subsubsec:annealing}Annealing}
+\subsection{\label{subsec:annealing}Annealing}
 As an additional tool to help improve the quality of the trained sampler, we
 scale the action during the $N_{\mathrm{T}}$ training steps using the target
 distribution \(p_{t}(x) \propto e^{-\gamma_{t} S(x)}\)
@@ -523,37 +523,6 @@ barriers between isolated modes, allowing the training to experience
 sufficient tunneling even when the final distribution is difficult to
 sample.
 %
-\begin{figure}[htpb]
-    \centering
-    \begin{subfigure}[b]{0.47\textwidth}
-        \includegraphics[width=\textwidth]{assets/autocorr_vs_beta.pdf}
-        \caption{\label{fig:autocorr} The integrated autocorrelation
-        time \(\tau_{\mathrm{int}}^{Q}\) vs \(\beta\)}
-    %     of the topological charge for both HMC
-    % (black, dashed line) and the trained model (solid, red line).}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.49\textwidth}
-        \includegraphics[width=\textwidth]{assets/plaqsf_leapfrog.pdf}
-        \caption{\label{fig:plaqsf_beta}Deviation in the average plaquette vs
-        leapfrog step.}
-    \end{subfigure}
-    \begin{subfigure}[b]{\textwidth}
-        \includegraphics[width=\textwidth]{assets/tint.pdf}
-        \caption{\label{fig:tint}Integrated autocorrelation time for trained
-        models with different trajectory lengths \(N_{\mathrm{LF}}\), at
-    \(\beta = 2, 3, \ldots, 7\)}
-    \end{subfigure}
-    \begin{subfigure}[t]{\textwidth}
-        \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
-        \caption{\label{fig:ridgeplots}Illustration of how different quantities
-            change during the generalized leapfrog update, the variation in the
-            average plaquette (left), the real-valued topological charge
-        (middle) and the effective energy (right).}
-    \end{subfigure}
-    \caption{\label{fig:observables}Plots of various lattice observables.}
-\end{figure}
-%
 % \begin{figure}[htpb]
 %     \includegraphics[width=\textwidth]{assets/ridgeplots.pdf}
 %     \caption{\label{fig:ridgeplots}Illustration of how different quantities
@@ -562,7 +531,18 @@ sample.
 %     (middle) and the effective energy (right).}
 % \end{figure}
 %
+\clearpage
 \section{\label{sec:results}Results}
+%
+\begin{wrapfigure}[14]{r}{0.55\textwidth}
+    \vspace{-\baselineskip}
+    \centering
+    \includegraphics[width=0.54\textwidth]{assets/autocorr_vs_beta.pdf}
+    \caption{\label{fig:autocorr}Estimated
+    \(\tau_{\mathrm{int}}^{\mathcal{Q}_{\mathbb{R}}}\) vs \(\beta\).}
+    %, scaled by \(N_{\mathrm{LF}}\) to account for simulation cost.}
+\end{wrapfigure}
+%
 We can measure the performance of our approach by comparing the integrated
 autocorrelation time against traditional HMC.
 %
@@ -574,7 +554,6 @@ To better understand how these transformations effect the HMC update, we can
 look at how various quantities change over the course of a trajectory, as shown
 in Fig~\ref{fig:ridgeplots}.
 %
-
 We see from the plot of \(\mathcal{H} - \sum \log | \mathcal{J} |\) in
 Fig~\ref{fig:ridgeplots} (right) that the trained sampler artificially
 increases the energy towards the middle of the trajectory.
@@ -593,6 +572,35 @@ behaves.
 %
 This allows our trajectories to explore new regions of the target distribution
 which may have been previously inaccessible.
+Our implementation is open source, and is publicly available on github at
+\href{https://www.github.com/saforem2/l2hmc-qcd}{github.com/saforem2/l2hmc-qcd}.
+%
+\begin{figure}[htpb]
+    \includegraphics[width=\textwidth]{assets/tint.pdf}
+    \caption{\label{fig:tint}Integrated autocorrelation time for trained
+    models with different trajectory lengths \(N_{\mathrm{LF}}\), at
+\(\beta = 2, 3, \ldots, 7\).}
+\end{figure}
+%
+%
+\begin{figure}[htpb]
+    \centering
+% \begin{subfigure}[t]{\textwidth}
+    \includegraphics[width=0.9\textwidth]{assets/ridgeplots.pdf}
+    \caption{\label{fig:ridgeplots}Illustration of how different quantities
+    change during the generalized leapfrog update.}%
+    %     , the variation in the
+    %     average plaquette (left), the real-valued topological charge
+    % (middle) and the effective energy (right).}
+% \end{subfigure}
+\end{figure}
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\textwidth]{assets/plaqsf_vs_lf_step_1659.pdf}
+    \caption{\label{fig:plaqsf_beta}Plots showing the deviation in average
+    plaquette vs leapfrog step from the expected value in the infinite
+volume limit}
+\end{figure}
 %
 \section{\label{sec:conclusion}Conclusion}
 %
@@ -607,7 +615,32 @@ By looking at the evolution of different quantities over the generalized
 leapfrog trajectory, we are able to gain insight into the mechanism driving
 this improved behavior.
 %
-
+\section{\label{sec:ack}Acknowledgments}
+%
+This research was supported by the Exascale Computing Project (17-SC-20-SC), a
+collaborative effort of the U.S. Department of Energy Office of Science and the
+National Nuclear Security Administration.
+%
+This research was performed using resources of the Argonne Leadership Computing
+Facility (ALCF), which is a DOE Office of Science User Facility supported under
+Contract DE\_AC02--06CH11357. 
+%
+This work describes objective technical results and analysis.
+%
+Any subjective views or opinions that might be expressed in the work do not
+necessarily represent the views of the U.S. DOE or the United States
+Government.
+%
+Results presented in this research were obtained using the Python
+\citep{van1995python}, programming language and its many data science libraries
+\cite{%
+    matplotlib,
+    harris2020array,
+    tensorflow2015-whitepaper,
+    % seaborn_michael_waskom_2017_883859,
+    ipython4160251%
+}
+%
 % Explicitly, if we denote by \(M^{\pm} = \left(\begin{smallmatrix}\Gamma^{\pm} &
 % \cdot \\ \cdot & \Lambda^{\pm}\end{smallmatrix}\right)\), we have that 
 % %
