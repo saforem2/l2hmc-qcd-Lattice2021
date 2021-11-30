@@ -6,7 +6,7 @@
 \usepackage{wrapfig}
 \usepackage{bbm}
 \usepackage{natbib}
-\usepackage{amsfonts}
+% \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{graphicx}% Include figure files
 \usepackage{dcolumn}% Align table columns on decimal point
@@ -77,6 +77,9 @@
     We show an improvement in the integrated autocorrelation time of the
     topological charge when compared with traditional HMC, and propose methods
     for scaling our model to larger lattice volumes.
+    %
+    Our implementation is open source, and is publicly available on github at
+    \href{https://www.github.com/saforem2/l2hmc-qcd}{github.com/saforem2/l2hmc-qcd}.
 }
 
 \FullConference{
@@ -115,7 +118,7 @@ the function \(\mathcal{O}(\x)\) over the chain
 \end{equation}
 %
 Accounting for correlations between states in the chain, the sampling variance
-of this esimator is given by
+of this estimator is given by
 %
 \begin{equation}
   \sigmaup^{2} = \frac{\tau_{\mathcal{O}}^{\mathrm{int}}}{N}\sum_{n=1}^{N}
@@ -143,7 +146,7 @@ these induced correlations to become negligible.
 The ability to efficiently generate independent configurations is currently
 a major bottleneck for lattice simulations.
 %
-In this work we consider a \(U(1)\) gauge model on a 2D periodic lattice.
+In this work, we consider a \(U(1)\) gauge model on a 2D periodic lattice.
 %
 The theory is defined in terms of the link variables
 \(U_{\mu}(x) = e^{i x} \in U(1)\) with \(x \in [-\pi, \pi)\).
@@ -196,7 +199,7 @@ rate}\footnote{As measured between subsequent states in our chain \(i\),
 which serves as a measure for how efficiently our chain is able to jump
 (tunnel) between sectors of distinct topological charge.
 %
-From Figure \ref{fig:qfreezing}, we can see that
+From Figure~\ref{fig:qfreezing}, we can see that
 \(\overline{\delta Q}_{\mathbb{Z}} \rightarrow 0\) as
 \(\beta\rightarrow \infty\).
 %
@@ -269,7 +272,7 @@ accept/reject step.
         \end{equation}
 \end{enumerate}
 %
-An illustration of this procedure can be seen in Figure \ref{fig:hmc}.
+An illustration of this procedure can be seen in Figure~\ref{fig:hmc}.
 %
 \begin{figure}[htpb]
     \centering
@@ -367,8 +370,9 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
     leapfrog step.}
     \end{subfigure}
     \caption{\label{fig:networks}Illustrations of the generalized
-    leapfrog update. In Fig.~\ref{subfig:updates},\ref{subfig:network_fns}, we
-denote \(\bar{\mathbf{x}}_{k} = \maskbar\odot \mathbf{x}_{k}\).}
+        leapfrog update. In Figure~\ref{subfig:updates},
+        ~\ref{subfig:network_fns}, we denote \(\bar{\mathbf{x}}_{k} =
+    \maskbar\odot \mathbf{x}_{k}\).}
 \end{figure}
 %
 \subsection{\label{subsec:networks}Network Details}
@@ -430,7 +434,7 @@ where the outputs \(s_{x}, t_{x}, q_{x}\) are of the same dimensionality as
 \(\x\), and \(\lambda_{s}, \lambda_{q}\) are trainable parameters.
 %
 These outputs are then used to update \(\x\), as shown in
-Fig~\ref{fig:networks}.
+Figure~\ref{fig:networks}.
 
 \subsection{\label{subsec:training}Training Details}
 %
@@ -523,57 +527,111 @@ tunneling even when the final distribution is difficult to sample.
 We can measure the performance of our approach by comparing the integrated
 autocorrelation time against traditional HMC.
 %
-We see in Fig~\ref{fig:autocorr} that our estimate of the integrated
+We see in Figure~\ref{fig:autocorr} that our estimate of the integrated
 autocorrelation time is much shorter for the trained model across \(\beta \in
 [2, 7]\).
 %
 To better understand how these transformations effect the HMC update, we can
 look at how various quantities change over the course of a trajectory, as shown
-in Fig~\ref{fig:ridgeplots}.
+in Figure~\ref{fig:ridgeplots}.
 %
 We see from the plot of \(\mathcal{H} - \sum \log | \mathcal{J} |\) in
-Fig~\ref{fig:ridgeplots} (c.) that the trained sampler artificially
+Figure~\ref{fig:ridgeplots}c that the trained sampler artificially
 increases the energy towards the middle of the trajectory.
 %
 This is analogous to reducing the coupling \(\beta\) during the trajectory, as
-can be seen in Fig~\ref{fig:plaqsf_beta}.
+can be seen in Figure~\ref{subfig:plaqsf}.
+%
+In particular, we can see that for \(\beta = 7\), the value of the plaquette at
+in the middle of the trajectory roughly corresponds to the expected value at
+\(\beta = 3\), indicated by the horizontal dashed line.
+%
+This effective reduction in the coupling constant allows our sampler to mix
+topological charge values in the middle of the trajectory, before returning to
+the stationary distribution at the end, as can be seen in
+Figure~\ref{fig:sinQf_ridgeplot}.
+%
 % \footnote{%
 %     % Note the trajectories have been shifted to be centered around their
 %     % midpoints.
 % }
 %
-By looking at the variation in the average plaquette\footnote{%
-    Here \(x^{\ast}_{P}\) denotes the expected value in the infinite volume limit.
-} \(\langle x_{P} - x^{\ast}_{P}\rangle\) over a trajectory for models trained
-at multiple values of beta we are able to better understand how our sampler
-behaves.
+By looking at the variation in the average plaquette \(\langle x_{P} -
+x^{\ast}_{P}\rangle\) over a trajectory for models trained at multiple values
+of beta we are able to better understand how our sampler behaves.
 %
 This allows our trajectories to explore new regions of the target distribution
 which may have been previously inaccessible.
-Our implementation is open source, and is publicly available on github at
-\href{https://www.github.com/saforem2/l2hmc-qcd}{github.com/saforem2/l2hmc-qcd}.
 %
 \begin{figure}[htpb]
-    \includegraphics[width=\linewidth]{assets/tint.pdf}
+    \includegraphics[width=\textwidth]{assets/tint.pdf}
     \caption{\label{fig:tint}Comparison of the integrated autocorrelation time
         for trained models vs HMC with different trajectory lengths,
     \(N_{\mathrm{LF}}\), at \(\beta = 4, 5, 6, 7\).}
 \end{figure}
 %
 %
-\begin{figure}[htpb]
-    \centering
-        \includegraphics[width=\linewidth]{assets/ridgeplots.pdf}
-        \caption{\label{fig:ridgeplots}Illustration of how different quantities
-        evolve over a single trajectory.}%
-\end{figure}
+% \begin{figure}[htpb]
+%     \centering
+%     \begin{subfigure}[b]{0.325\textwidth}
+%         \includegraphics[width=\textwidth]{assets/ridgeplots/plaqsf.pdf}
+%         \caption{\label{fig:plaqsf_ridgeplot}}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}[b]{0.32\textwidth}
+%         \includegraphics[width=\textwidth]{assets/ridgeplots/sinQf.pdf}
+%         \caption{\label{fig:sinQf_ridgeplot}}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}[b]{0.318\textwidth}
+%         \includegraphics[width=\textwidth]{assets/ridgeplots/hwf.pdf}
+%         \caption{\label{fig:hwf_ridgeplot}}
+%     \end{subfigure}
+%     \caption{\label{fig:ridgeplots}Illustration of how different quantities
+%     evolve over a single trajectory.}%
+% \end{figure}
 %
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=\linewidth]{assets/plaqsf_vs_lf_step.pdf}
-    \caption{\label{fig:plaqsf_beta}Plots illustrating how the average
-    plaquette\(x_{P}\) deviates from the expected value during a trajectory.}
+    \begin{subfigure}[t]{0.325\textwidth}
+        \includegraphics[width=\textwidth]{assets/ridgeplots/plaqsf.pdf}
+        \caption{\label{fig:plaqsf_ridgeplot}Deviation in \(x_{P}\).}
+        % \(V\rightarrow\infty\) limit, \(x^{\ast}_{P}\)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\textwidth}
+        \includegraphics[width=\textwidth]{assets/ridgeplots/sinQf.pdf}
+        \caption{\label{fig:sinQf_ridgeplot}Topological charge mixing
+        \(Q_{\mathbb{R}}\).}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.318\textwidth}
+        \includegraphics[width=\textwidth]{assets/ridgeplots/hwf.pdf}
+        \caption{\label{fig:hwf_ridgeplot}Artificial influx of energy.}
+    \end{subfigure}
+    \caption{\label{fig:ridgeplots}Illustration of how different quantities
+    evolve over a single trajectory.}%
 \end{figure}
+%
+\begin{figure}[htpb]
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\linewidth]{assets/dplaqsf_vs_lf.pdf}
+        \caption{\label{subfig:dplaqsf}The deviation of \(x_{P}\) from the
+        \(V\rightarrow\infty\) limit, \(x_{P}^{\ast}\).}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\linewidth]{assets/plaqsf_vs_lf.pdf}
+        \caption{\label{subfig:plaqsf}Note \(x^{\ast}_{P}\) is indicated by the
+        horizontal dashed lines.}
+    \end{subfigure}
+    \caption{\label{fig:plaqsf}Plots showing how the average plaquette varies
+        with over a single trajectory for different models trained at \(\beta =
+    3, 4, \ldots, 7\).}
+\end{figure}
+%
+
+\section{\label{sec:conclusion}Conclusion}
 %
 In this work we have proposed a generalized sampling procedure for HMC that can
 be used for generating gauge configurations in the 2D \(U(1)\) lattice model.
