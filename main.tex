@@ -42,6 +42,7 @@
             A(\xi^{\ast}|\xi) \equiv \min\left\{1,
             \frac{p(\xi^{\ast})}{p(\xi)}\right\}
     }
+
 \newcommand{\acceptProbJ}{%
             A(\xi^{\ast}|\xi) \equiv \min\left\{1,
             \frac{p(\xi^{\ast})}{p(\xi)}%
@@ -51,7 +52,7 @@
 \newcommand{\mpar}[1]{\marginpar{\color{red}{#1}}}
 
 \title{LeapfrogLayers: A Trainable Framework for Effective Topological Sampling}
-% \ShortTitle{A Trainable Framework for effective Topological Sampling}
+\ShortTitle{LeapfrogLayers}
 
 \author*[a]{Sam Foreman}
 \author[a,b]{Xiao-Yong Jin}
@@ -61,9 +62,6 @@
   Lemont, IL, USA}
 \affiliation[b]{Computational Science Division, Argonne National Laboratory,\\
   Lemont, IL, USA}
-
-% \affiliation[b]{Department, University,\\
-% Street number, City, Country}
 
 \emailAdd{foremans@anl.gov}
 \emailAdd{xjin@anl.gov}
@@ -95,7 +93,6 @@
 
 \section{\label{sec:intro}Introduction}
 %
-%One of the major goals of lattice field theory calculations is to evaluate
 The main task in lattice field theory calculations is to evaluate
 integrals of the form
 %
@@ -125,7 +122,6 @@ of this estimator is given by
   \left[ \mathcal{O}(\x_n) - \overline{\mathcal{O}} \right]^2
 \end{equation}
 %
-% TODO: Elaborate on this
 where \(\tau^{\mathrm{int}}_{\mathcal{O}}\) is the integrated autocorrelation
 time.
 %
@@ -164,15 +160,6 @@ x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)\), starting at site \(n\) of the
 lattice.\footnote{%
     Here, the sum \(\sum_{P}\) denotes the sum over all such plaquettes.
 }
-% \begin{align}
-%   S_{\beta}&(\x) = \beta \sum_{P} 1 - \cos{x_{P}} \\
-%   \nonumber
-%   x_{P} &\equiv x_{\mu}(n) + x_{\nu}(n + \hat{\mu})
-%     - x_{\mu}(n+\hat{\nu}) - x_{\nu}(n) 
-% \end{align}
-%
-% defined in terms of the sum of the gauge variables around the elementary plaquette
-% starting at site $n$ of the lattice.
 %
 For a given lattice configuration, we can calculate the topological charge \(Q
 \in \mathbb{Z}\) using
@@ -521,7 +508,6 @@ tunneling even when the final distribution is difficult to sample.
     \includegraphics[width=0.58\textwidth]{assets/autocorr_vs_beta.pdf}
     \caption{\label{fig:autocorr}Estimated
     \(\tau_{\mathrm{int}}^{\mathcal{Q}_{\mathbb{R}}}\) vs \(\beta\).}
-    %, scaled by \(N_{\mathrm{LF}}\) to account for simulation cost.}
 \end{wrapfigure}
 %
 We can measure the performance of our approach by comparing the integrated
@@ -551,11 +537,6 @@ topological charge values in the middle of the trajectory, before returning to
 the stationary distribution at the end, as can be seen in
 Figure~\ref{fig:sinQf_ridgeplot}.
 %
-% \footnote{%
-%     % Note the trajectories have been shifted to be centered around their
-%     % midpoints.
-% }
-%
 By looking at the variation in the average plaquette \(\langle x_{P} -
 x^{\ast}_{P}\rangle\) over a trajectory for models trained at multiple values
 of beta we are able to better understand how our sampler behaves.
@@ -570,33 +551,11 @@ which may have been previously inaccessible.
     \(N_{\mathrm{LF}}\), at \(\beta = 4, 5, 6, 7\).}
 \end{figure}
 %
-%
-% \begin{figure}[htpb]
-%     \centering
-%     \begin{subfigure}[b]{0.325\textwidth}
-%         \includegraphics[width=\textwidth]{assets/ridgeplots/plaqsf.pdf}
-%         \caption{\label{fig:plaqsf_ridgeplot}}
-%     \end{subfigure}
-%     \hfill
-%     \begin{subfigure}[b]{0.32\textwidth}
-%         \includegraphics[width=\textwidth]{assets/ridgeplots/sinQf.pdf}
-%         \caption{\label{fig:sinQf_ridgeplot}}
-%     \end{subfigure}
-%     \hfill
-%     \begin{subfigure}[b]{0.318\textwidth}
-%         \includegraphics[width=\textwidth]{assets/ridgeplots/hwf.pdf}
-%         \caption{\label{fig:hwf_ridgeplot}}
-%     \end{subfigure}
-%     \caption{\label{fig:ridgeplots}Illustration of how different quantities
-%     evolve over a single trajectory.}%
-% \end{figure}
-%
 \begin{figure}[htpb]
     \centering
     \begin{subfigure}[t]{0.325\textwidth}
         \includegraphics[width=\textwidth]{assets/ridgeplots/plaqsf.pdf}
         \caption{\label{fig:plaqsf_ridgeplot}Deviation in \(x_{P}\).}
-        % \(V\rightarrow\infty\) limit, \(x^{\ast}_{P}\)}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.32\textwidth}
@@ -666,7 +625,6 @@ Results presented in this research were obtained using the Python
     matplotlib,
     harris2020array,
     tensorflow2015-whitepaper,
-    % seaborn_michael_waskom_2017_883859,
     ipython4160251%
 }
 %
@@ -678,11 +636,7 @@ Results presented in this research were obtained using the Python
 % \end{equation}
 % %
 
-% \begin{thebibliography}{98}
 \bibliographystyle{JHEP}
 \bibliography{main}
-% \bibitem{...}
-
-% \end{thebibliography}
 
 \end{document}
