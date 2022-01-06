@@ -8,6 +8,7 @@
 \usepackage{natbib}
 % \usepackage{amsfonts}
 \usepackage{amsmath}
+\usepackage[mathscr]{euscript}
 \usepackage{graphicx}% Include figure files
 \usepackage{dcolumn}% Align table columns on decimal point
 \usepackage{bm}% bold math
@@ -17,12 +18,16 @@
 \usepackage[normalem]{ulem}
 % \reversemarginpar
 
+\definecolor{darkblue}{HTML}{3B44C0}
+\definecolor{darkred}{HTML}{b40626}
 \definecolor{blue}{HTML}{007fff}
 \definecolor{red}{HTML}{FF2052}
 
 \newcommand{\x}{\mathbf{x}}
 \newcommand{\p}{\mathbf{v}}
 
+\newcommand{\darkblue}[1]{\textcolor{darkblue}{{#1}}}
+\newcommand{\darkred}[1]{\textcolor{darkred}{{#1}}}
 \newcommand{\mask}{\textcolor{blue}{{m}}}
 \newcommand{\maskbar}{\textcolor{red}{\bar{m}}}
 
@@ -130,19 +135,48 @@ these induced correlations to become negligible.
 %
 \subsection{\label{subsec:qfreezing}Charge Freezing}
 %
-\begin{wrapfigure}[18]{r}[36pt]{0.50\textwidth}
+\begin{wrapfigure}[21]{r}[30pt]{0.50\textwidth}
     \vspace{-\baselineskip}
     \vspace{-\baselineskip}
-    \includegraphics[width=0.47\textwidth]{assets/qfreezing.pdf}
+    \includegraphics[width=0.45\textwidth]{assets/qfreezing.pdf}
     \centering
     \caption{\label{fig:qfreezing}Illustration of the topological charge,
-      \(Q_{\mathbb{Z}}\), freezing as \(\beta : 2 \rightarrow 7\) for traditional HMC.}
+      \(Q_{\mathbb{Z}}\), freezing as \(\beta : \darkblue{2} \rightarrow \darkred{7}\)
+       for traditional HMC.}%
 \end{wrapfigure}
 %
 The ability to efficiently generate independent configurations is currently
 a major bottleneck for lattice simulations.
 %
 In this work, we consider a \(U(1)\) gauge model on a 2D periodic lattice.
+% %
+% This simplified gauge theory serves as simple toy-model that
+% exhibits qualitative behavior similar to that of full QCD while remaining
+% computationally tractable.
+%
+This simplified model is known to be exactly solvable and the problem of
+generating configurations has been well studied~\cite{%
+  johnsonGeneralHeatbathAlgorithm2010,%
+  creutzConfinementCriticalDimensionality1979%
+}, and there exist classical methods which sample the topology effectively~\footnote{%
+  e.g.~\cite{Duerr2012}, which yields \(\mathscr{O}(1)\) auto-correlation times
+  for all \(\beta\) and lattice volumes, but which does not generalize to QCD.
+}.
+%
+% ~\cite{Duerr2012} classical methods which mix topological mixing 
+% with that eliminate charge freezing 
+% and classical methods for topological mixing .
+%
+Nevertheless, we are interested in this model due to the fact that it exhibits
+qualitative behavior similar to that of full QCD (e.g. critical slowing down),
+while remaining computationally feasible and easy to work with.%~\footnote{allows
+% for rapid prototyping / testing new ideas}.
+%
+% We are interested in this model due to its relatiuve simplicity, as well as
+% its qualitative behavior which 00
+
+% We are interested in this model primarily due to its relative simplicity
+% which allows for rapid prototyping , 
 %
 The theory is defined in terms of the link variables
 \(U_{\mu}(x) = e^{i x} \in U(1)\) with \(x \in [-\pi, \pi)\).
@@ -299,9 +333,11 @@ We can ensure our update is reversible by splitting the \(\x\) update into two
 parts and sequentially updating complementary subsets using a binary mask
 \(\mask\) and its complement \(\maskbar\).
 %
-As in~\cite{2017arXiv171109268L,Foreman:2021ixr}, we introduce \(d \sim
-\mathcal{U} (+, -)\), distributed independently of both \(\x\) and \(\p\), to
-determine the ``direction'' of our update\footnote{%
+As in~\cite{%
+  2017arXiv171109268L,% levyGeneralizingHamiltonianMonte2018,%
+  Foreman:2021ixr%
+}, we introduce \(d \sim \mathcal{U} (+, -)\), distributed independently of
+both \(\x\) and \(\p\), to determine the ``direction'' of our update\footnote{%
   As indicated by the superscript \(\pm\) on \(\Gamma^{\pm}, \Lambda^{\pm}\) in
   the update functions.
 }.
@@ -364,24 +400,25 @@ and is passed as input to the update functions \(\Lambda^{\pm}\)
 %
 \subsection{\label{subsec:networks}Network Details}
 %
-Normalizing flows~\cite{DinhSB16} are an obvious choice
-for the structure of the update functions.
+Normalizing flows~\cite{2016arXiv160508803D} are an obvious choice for the
+structure of the update functions.
 %
 These architectures are easily invertible while maintaining a tractable
 Jacobian determinant, and have also been shown to be effective at approximating
 complicated target distributions in high-dimensional spaces ~\cite{%
     Foreman:2021ixr,%
     Kanwar:2020xzo,%
-    DinhSB16,%
+    % dinhDensityEstimationUsing2016,%
+    2016arXiv160508803D,%
     Albergo:2021vyo,%
     Boyda:2020hsi,%
-    2017arXiv171109268L,%
-    2020arXiv201008047N,%
-    2020arXiv200616653N,%
-    2020arXiv200600866W,%
-    liNeuralNetworkRenormalization2018b,%
+    2017arXiv171109268L,% levyGeneralizingHamiltonianMonte2018,%
+    neklyudovOrbitalMCMC2020,%
+    neklyudovInvolutiveMcmcUnifying2020,%
+    wehenkelYouSayNormalizing2020,%
+    liNeuralNetworkRenormalization2018a,%
     Eichhorn:2021ccz,%
-    Nicoli:2020njz,%
+    Nicoli:2020njz%
 }.
 
 
@@ -641,6 +678,6 @@ Results presented in this research were obtained using the Python
 % %
 
 \bibliographystyle{JHEP}
-\bibliography{main}
+\bibliography{main,../../ZoteroLibrary1}
 
 \end{document}
