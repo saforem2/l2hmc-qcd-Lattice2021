@@ -157,6 +157,7 @@ In this work, we consider a \(U(1)\) gauge model on a 2D periodic lattice.
 This simplified model is known to be exactly solvable and the problem of
 generating configurations has been well studied~\cite{%
   johnsonGeneralHeatbathAlgorithm2010,%
+  Bazavov:2005zy,%
   creutzConfinementCriticalDimensionality1979%
 }, and there exist classical methods which sample the topology effectively~\footnote{%
   e.g.~\cite{Duerr2012}, which yields \(\mathscr{O}(1)\) auto-correlation times
@@ -198,11 +199,11 @@ lattice.\footnote{%
 For a given lattice configuration, we can calculate the topological charge \(Q
 \in \mathbb{Z}\) using
 %
-\begin{align}
-    Q_{\mathbb{Z}} &= \frac{1}{2\pi}\sum_{P}\left\lfloor x_{P} \right\rfloor,\text{ where } \\
-    \left\lfloor x_{P} \right\rfloor &\equiv x_{P} - 2\pi
+\begin{equation}
+    Q_{\mathbb{Z}} = \frac{1}{2\pi}\sum_{P}\left\lfloor x_{P} \right\rfloor,\text{ where }
+    \left\lfloor x_{P} \right\rfloor \equiv x_{P} - 2\pi
     \left\lfloor\frac{x_{P}+\pi}{2\pi}\right\rfloor.
-\end{align}
+\end{equation}
 %
 As \(\beta \rightarrow \infty\), the \(Q_{\mathbb{Z}} = 0\) mode becomes
 dominant and we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
@@ -406,14 +407,16 @@ structure of the update functions.
 These architectures are easily invertible while maintaining a tractable
 Jacobian determinant, and have also been shown to be effective at approximating
 complicated target distributions in high-dimensional spaces ~\cite{%
+    Foreman:2021ljl,%
+    Li2021ANN,%
+    Foreman2018,%
     Foreman:2021ixr,%
     Kanwar:2020xzo,%
-    % dinhDensityEstimationUsing2016,%
-    2016arXiv160508803D,%
+    2016arXiv160508803D,% dinhDensityEstimationUsing2016,%
     Albergo:2021vyo,%
     Boyda:2020hsi,%
     2017arXiv171109268L,% levyGeneralizingHamiltonianMonte2018,%
-    neklyudovOrbitalMCMC2020,%
+    Neklyudov2020OrbitalM,%
     neklyudovInvolutiveMcmcUnifying2020,%
     wehenkelYouSayNormalizing2020,%
     liNeuralNetworkRenormalization2018a,%
@@ -663,11 +666,11 @@ Government.
 Results presented in this research were obtained using the Python
 \citep{van1995python}, programming language and its many data science libraries
 \cite{%
-    matplotlib,
-    harris2020array,
-    tensorflow2015-whitepaper,
+    matplotlib,%
+    harris2020array,%
+    tensorflow2015-whitepaper,%
     ipython4160251%
-}
+}.
 %
 % Explicitly, if we denote by \(M^{\pm} = \left(\begin{smallmatrix}\Gamma^{\pm} &
 % \cdot \\ \cdot & \Lambda^{\pm}\end{smallmatrix}\right)\), we have that 
