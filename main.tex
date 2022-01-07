@@ -3,7 +3,8 @@
 % data according to the instructions in PoSauthmanual.pdf
 \documentclass[a4paper,11pt]{article}
 \usepackage{pos}
-\usepackage{wrapfig}
+\usepackage{wrapfig2}
+% \usepackage{picins}
 \usepackage{bbm}
 \usepackage{natbib}
 % \usepackage{amsfonts}
@@ -135,46 +136,84 @@ these induced correlations to become negligible.
 %
 \subsection{\label{subsec:qfreezing}Charge Freezing}
 %
-\begin{wrapfigure}[21]{r}[30pt]{0.50\textwidth}
-    \vspace{-\baselineskip}
-    \vspace{-\baselineskip}
+\begin{wrapfigure}[20]{r}{0.46\textwidth}
+  \vspace{-\baselineskip}
+  \vspace{-\baselineskip}
+  \centering
     \includegraphics[width=0.45\textwidth]{assets/qfreezing.pdf}
-    \centering
-    \caption{\label{fig:qfreezing}Illustration of the topological charge,
-      \(Q_{\mathbb{Z}}\), freezing as \(\beta : \darkblue{2} \rightarrow \darkred{7}\)
-       for traditional HMC.}%
+  \caption{\label{fig:qfreezing}Illustration of the topological charge,
+    \(Q_{\mathbb{Z}}\), freezing as \(\beta : \darkblue{2} \rightarrow \darkred{7}\)
+  for traditional HMC.}%
 \end{wrapfigure}
 %
 The ability to efficiently generate independent configurations is currently
 a major bottleneck for lattice simulations.
 %
-In this work, we consider a \(U(1)\) gauge model on a 2D periodic lattice.
+In this work, we restrict our attention to a 2D \(U(1)\) lattice gauge theory
+and compare our approach with that of traditional HMC.
+%
+It is worth mentioning that, while there exist classical alternatives which
+outperform HMC at sampling the topology, (see e.g.~\cite{Eichhorn:2021ccz} for
+a comparison), they are of limited practical use as they cannot be
+straightforwardly applied to full QCD.\footnote{In contrast to the proposed
+method which, at least in principle, is generally applicable}.
+
+% they are restricted to simplified models whereas our approach
+% can (in principle) be straightforwardly applied to full QCD.
+
+% cannot be
+% straightforwardly applied to full QCD .
+% models and cannot be straightforwardly applied to full QCD.
+
+% are known to outperform
+% HMC they are restricted to simplified models and cannot be straightforwardly
+% applied to full QCD.
+%
+% the 2D \(U(1)\) model, their
+% scope is severly limited and cannot be straightforwardly applied to full QCD.
+% simplified models and edge cases whereas our approach, in principle, should
+% apply straightforwardly to full QCD.
+
+% they are applicable only to this toy model and the problem for full QCD
+% remains.
+
+% While there exist \emph{beter} methods than generic HMC (se,
+% e.g.~\cite{Eichhorn:2021ccz} for a comparison of different approaches), 
+
+% The problem of topological gauge configuration has model been studied (see,
+% e.g.~\cite{Eichhorn:2021ccz} for a comparison of different approaches) with varying success for the 2D U(1) model
+% implementation whose behavior is well understood\footnote{While \emph sa.
+%   sampling methods exist, our uiltimate goal is eventually .
+%
+
+% In this work, we consider a \(U(1)\) gauge model on a 2D periodic lattice.
+% % %
+% % This simplified gauge theory serves as simple toy-model that
+% % exhibits qualitative behavior similar to that of full QCD while remaining
+% % computationally tractable.
 % %
-% This simplified gauge theory serves as simple toy-model that
-% exhibits qualitative behavior similar to that of full QCD while remaining
-% computationally tractable.
-%
-This simplified model is known to be exactly solvable and the problem of
-generating configurations has been well studied~\cite{%
-  johnsonGeneralHeatbathAlgorithm2010,%
-  Bazavov:2005zy,%
-  creutzConfinementCriticalDimensionality1979%
-}, and there exist classical methods which sample the topology effectively~\footnote{%
-  e.g.~\cite{Duerr2012}, which yields \(\mathscr{O}(1)\) auto-correlation times
-  for all \(\beta\) and lattice volumes, but which does not generalize to QCD.
-}.
-%
-% ~\cite{Duerr2012} classical methods which mix topological mixing 
-% with that eliminate charge freezing 
-% and classical methods for topological mixing .
-%
-Nevertheless, we are interested in this model due to the fact that it exhibits
-qualitative behavior similar to that of full QCD (e.g. critical slowing down),
-while remaining computationally feasible and easy to work with.%~\footnote{allows
-% for rapid prototyping / testing new ideas}.
-%
-% We are interested in this model due to its relatiuve simplicity, as well as
-% its qualitative behavior which 00
+% This simplified model is known to be exactly solvable and the problem of
+% generating configurations has been well studied~\cite{%
+%   Eichhorn:2021ccz,%
+%   johnsonGeneralHeatbathAlgorithm2010,%
+%   Bazavov:2005zy,%
+%   creutzConfinementCriticalDimensionality1979%
+% }, and there exist classical methods which sample the topology effectively~\footnote{%
+%   e.g.~\cite{Duerr2012}, which yields \(\mathscr{O}(1)\) auto-correlation times
+%   for all \(\beta\) and lattice volumes, but which does not generalize to QCD.
+% }.
+% %
+% % ~\cite{Duerr2012} classical methods which mix topological mixing 
+% % with that eliminate charge freezing 
+% % and classical methods for topological mixing .
+% %
+% Nevertheless, we are interested in this model due to the fact that it exhibits
+% qualitative behavior similar to that of full QCD (e.g. critical slowing down),
+% while remaining computationally feasible and easy to work with.%~\footnote{allows
+% % for rapid prototyping / testing new ideas}.
+% %
+% % We are interested in this model due to its relatiuve simplicity, as well as
+% % its qualitative behavior which 00
 
 % We are interested in this model primarily due to its relative simplicity
 % which allows for rapid prototyping , 
@@ -420,7 +459,6 @@ complicated target distributions in high-dimensional spaces ~\cite{%
     neklyudovInvolutiveMcmcUnifying2020,%
     wehenkelYouSayNormalizing2020,%
     liNeuralNetworkRenormalization2018a,%
-    Eichhorn:2021ccz,%
     Nicoli:2020njz%
 }.
 
