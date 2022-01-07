@@ -2,7 +2,8 @@
 % data according to the instructions in PoSauthmanual.pdf
 \documentclass[a4paper,11pt]{article}
 \usepackage{pos}
-\usepackage{wrapfig2}
+%\usepackage{wrapfig2}
+\usepackage{wrapfig}
 % \usepackage{picins}
 \usepackage{bbm}
 \usepackage{natbib}
@@ -132,6 +133,20 @@ time.
 %
 This quantity can be interpreted as the additional time required for
 these induced correlations to become negligible.
+
+While our main target for improved gauge field generation is full QCD,
+here we restrict our work to the simpler 2D U(1) pure-gauge lattice
+theory.
+There are already many efficient alternatives for simulating this theory
+(see e.g.~\cite{Eichhorn:2021ccz} and references therein for a comparison),
+however, they are not generally applicable to full QCD.
+%
+The method presented here can be extended to full QCD in a relatively
+straightforward manner, though the cost of training and final
+effectiveness are open questions.
+%
+For this reason we only consider HMC as a baseline general method to
+compare performance to.
 %
 \subsection{\label{subsec:qfreezing}Charge Freezing}
 %
@@ -148,14 +163,19 @@ these induced correlations to become negligible.
 The ability to efficiently generate independent configurations is currently
 a major bottleneck for lattice simulations.
 %
-In this work, we restrict our attention to a 2D \(U(1)\) lattice gauge theory
-and compare our approach with that of traditional HMC.
+The 2D U(1) gauge theory considered here has sectors of topological charge that
+become separated by large potential barriers for increasing $\beta$
+similar to full QCD.
+
 %
-It is worth mentioning that, while there exist classical alternatives which
-outperform HMC at sampling the topology, (see e.g.~\cite{Eichhorn:2021ccz} and
-references therein for a comparison), they are of limited practical use as they
-cannot be straightforwardly applied to full QCD.\footnote{In contrast to the
-proposed method which, at least in principle, is generally applicable.}
+%In this work, we restrict our attention to a 2D \(U(1)\) lattice gauge theory
+%and compare our approach with that of traditional HMC.
+%
+%It is worth mentioning that, while there exist classical alternatives which
+%outperform HMC at sampling the topology, (see e.g.~\cite{Eichhorn:2021ccz} and
+%references therein for a comparison), they are of limited practical use as they
+%cannot be straightforwardly applied to full QCD.\footnote{In contrast to the
+%proposed method which, at least in principle, is generally applicable.}
 
 % they are restricted to simplified models whereas our approach
 % can (in principle) be straightforwardly applied to full QCD.
