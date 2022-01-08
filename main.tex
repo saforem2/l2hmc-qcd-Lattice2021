@@ -121,7 +121,8 @@ the function \(\mathcal{O}(\x)\) over the chain
 \end{equation}
 %
 Accounting for correlations between states in the chain, the sampling variance
-of this estimator is given by
+%of this estimator
+is given by
 %
 \begin{equation}
   \sigmaup^{2} = \frac{\tau_{\mathcal{O}}^{\mathrm{int}}}{N}\sum_{n=1}^{N}
@@ -139,32 +140,23 @@ here we restrict our work to the simpler 2D U(1) pure-gauge lattice
 theory.
 There are already many efficient alternatives for simulating this theory
 (see e.g.~\cite{Eichhorn:2021ccz} and references therein for a comparison),
-however, they are not generally applicable to full QCD.
+however, they either are not generally applicable to full QCD
+or haven't demonstrated a significant advantage over HMC there.
+%
+For this reason we only consider HMC as a baseline method for
+performance comparison.
 %
 The method presented here can be extended to full QCD in a relatively
-straightforward manner, though the cost of training and final
-effectiveness are open questions.
-%
-For this reason we only consider HMC as a baseline general method to
-compare performance to.
+straightforward manner, though the cost of training and efficiency are
+still open questions.
 %
 \subsection{\label{subsec:qfreezing}Charge Freezing}
-%
-\begin{wrapfigure}[20]{r}{0.46\textwidth}
-  \vspace{-\baselineskip}
-  \vspace{-\baselineskip}
-  \centering
-    \includegraphics[width=0.45\textwidth]{assets/qfreezing.pdf}
-  \caption{\label{fig:qfreezing}Illustration of the topological charge,
-    \(Q_{\mathbb{Z}}\), freezing as \(\beta : \darkblue{2} \rightarrow \darkred{7}\)
-  for traditional HMC.}%
-\end{wrapfigure}
 %
 The ability to efficiently generate independent configurations is currently
 a major bottleneck for lattice simulations.
 %
 The 2D U(1) gauge theory considered here has sectors of topological charge that
-become separated by large potential barriers for increasing $\beta$
+become separated by large potential barriers for increasing $\beta$,
 similar to full QCD.
 
 %
@@ -250,9 +242,10 @@ Our target distribution is given by \(p(\x)\propto e^{-S_{\beta}(\x)}\), where
 defined in terms of the sum of the gauge variables around the elementary
 plaquette, \(x_{P} \equiv x_{\mu}(n) + x_{\nu}(n + \hat{\mu}) -
 x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)\), starting at site \(n\) of the
-lattice.\footnote{%
-    Here, the sum \(\sum_{P}\) denotes the sum over all such plaquettes.
-}
+lattice, and \(\sum_{P}\) denotes the sum over all such plaquettes.
+%\footnote{%
+%    Here, the sum \(\sum_{P}\) denotes the sum over all such plaquettes.
+%}
 %
 For a given lattice configuration, we can calculate the topological charge \(Q
 \in \mathbb{Z}\) using
@@ -263,15 +256,20 @@ For a given lattice configuration, we can calculate the topological charge \(Q
     \left\lfloor\frac{x_{P}+\pi}{2\pi}\right\rfloor.
 \end{equation}
 %
-As \(\beta \rightarrow \infty\), the \(Q_{\mathbb{Z}} = 0\) mode becomes
-dominant and we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
+As \(\beta \rightarrow \infty\),
+%the \(Q_{\mathbb{Z}} = 0\) sector becomes dominant and
+we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
 durations of the simulation.
 %
 This freezing can be quantatively measured by introducing the \emph{tunneling
-rate}\footnote{As measured between subsequent states in our chain \(i\),
-\(i+1\).}
+rate}
+%\footnote{
+(as measured between subsequent states in our chain \(i\) and
+\(i+1\) )
+%.}
 %
 \begin{equation}
+  \overline{\delta Q}_{\mathbb{Z}} ~,~\mathrm{with}~~
   \delta Q_{\mathbb{Z},i} \equiv \left|Q_{\mathbb{Z},i+1} - Q_{\mathbb{Z},i}\right|
     \in \mathbb{Z},
 \end{equation}
@@ -283,6 +281,16 @@ From Figure~\ref{fig:qfreezing}, we can see that
 \(\overline{\delta Q}_{\mathbb{Z}} \rightarrow 0\) as
 \(\beta\rightarrow \infty\).
 %
+\begin{wrapfigure}[21]{r}{0.46\textwidth}
+  %\vspace{0.5\baselineskip}
+  \centering
+    \includegraphics[width=0.45\textwidth]{assets/qfreezing.pdf}
+  \caption{\label{fig:qfreezing}Illustration of the topological charge,
+    \(Q_{\mathbb{Z}}\), freezing as \(\beta : \darkblue{2} \rightarrow \darkred{7}\)
+  for traditional HMC.}%
+\end{wrapfigure}
+%
+\vspace{-\baselineskip}
 \section{\label{sec:hmc}Hamiltonian Monte Carlo (HMC)}
 %
 The Hamiltonian Monte Carlo algorithm begins by introducing a fictitious
@@ -388,7 +396,10 @@ As in HMC, we follow the general pattern of performing alternating updates of
 \(\p\) and \(\x\).
 %
 
-We can ensure our update is reversible by splitting the \(\x\) update into two
+We can ensure
+%our update is reversible
+the Jacobian is simple
+by splitting the \(\x\) update into two
 parts and sequentially updating complementary subsets using a binary mask
 \(\mask\) and its complement \(\maskbar\).
 %
