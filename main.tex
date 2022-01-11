@@ -19,6 +19,11 @@
 \usepackage[normalem]{ulem}
 % \reversemarginpar
 
+\definecolor{purple}{HTML}{571E65}
+\definecolor{teal}{HTML}{2C9691}
+\definecolor{green}{HTML}{66CB69}
+\definecolor{altblue}{HTML}{4F6496}
+\definecolor{yellow}{HTML}{FDE726}%{D0BE1E}
 \definecolor{darkblue}{HTML}{3B44C0}
 \definecolor{darkred}{HTML}{b40626}
 \definecolor{blue}{HTML}{007fff}
@@ -27,6 +32,11 @@
 \newcommand{\x}{\mathbf{x}}
 \newcommand{\p}{\mathbf{v}}
 
+\newcommand{\green}[1]{\textcolor{green}{{#1}}}
+\newcommand{\teal}[1]{\textcolor{teal}{{#1}}}
+\newcommand{\purple}[1]{\textcolor{purple}{{#1}}}
+\newcommand{\yellow}[1]{\textcolor{yellow}{{#1}}}
+\newcommand{\altblue}[1]{\textcolor{altblue}{{#1}}}
 \newcommand{\darkblue}[1]{\textcolor{darkblue}{{#1}}}
 \newcommand{\darkred}[1]{\textcolor{darkred}{{#1}}}
 \newcommand{\mask}{\textcolor{blue}{{m}}}
@@ -657,7 +667,7 @@ which may have been previously inaccessible.
     \includegraphics[width=\textwidth]{assets/tint.pdf}
     \caption{\label{fig:tint}Comparison of the integrated autocorrelation time
         for trained models vs HMC with different trajectory lengths,
-    \(N_{\mathrm{LF}}\), at \(\beta = 4, 5, 6, 7\).}
+    \(N_{\mathrm{LF}}\), at \(\beta = 4, 5, 6, 7\) (left to right).}
 \end{figure}
 %
 \begin{figure}[htpb]
@@ -677,8 +687,8 @@ which may have been previously inaccessible.
         \includegraphics[width=\textwidth]{assets/ridgeplots/hwf.pdf}
         \caption{\label{fig:hwf_ridgeplot}Artificial influx of energy.}
     \end{subfigure}
-    \caption{\label{fig:ridgeplots}Illustration of how different quantities
-    evolve over a single trajectory.}%
+    \caption{\label{fig:ridgeplots}Evolution of different quantities over a
+    single trajectory consisting of $N_{\mathrm{LF}} = 10$ leapfrog steps.}%
 \end{figure}
 %
 \begin{figure}[htpb]
@@ -695,7 +705,7 @@ which may have been previously inaccessible.
     \end{subfigure}
     \caption{\label{fig:plaqsf}Plots showing how the plaquette varies
         over a single trajectory for models trained at \(\beta =
-    3, 4, \ldots, 7\).}
+    \purple{3}, \altblue{4}, \teal{5}, \green{6}, \yellow{7}\).}
 \end{figure}
 %
 
