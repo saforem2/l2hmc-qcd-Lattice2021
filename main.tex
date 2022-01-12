@@ -169,76 +169,6 @@ The 2D U(1) gauge theory considered here has sectors of topological charge that
 become separated by large potential barriers for increasing $\beta$,
 similar to full QCD.
 
-%
-%In this work, we restrict our attention to a 2D \(U(1)\) lattice gauge theory
-%and compare our approach with that of traditional HMC.
-%
-%It is worth mentioning that, while there exist classical alternatives which
-%outperform HMC at sampling the topology, (see e.g.~\cite{Eichhorn:2021ccz} and
-%references therein for a comparison), they are of limited practical use as they
-%cannot be straightforwardly applied to full QCD.\footnote{In contrast to the
-%proposed method which, at least in principle, is generally applicable.}
-
-% they are restricted to simplified models whereas our approach
-% can (in principle) be straightforwardly applied to full QCD.
-
-% cannot be
-% straightforwardly applied to full QCD .
-% models and cannot be straightforwardly applied to full QCD.
-
-% are known to outperform
-% HMC they are restricted to simplified models and cannot be straightforwardly
-% applied to full QCD.
-%
-% the 2D \(U(1)\) model, their
-% scope is severly limited and cannot be straightforwardly applied to full QCD.
-% simplified models and edge cases whereas our approach, in principle, should
-% apply straightforwardly to full QCD.
-
-% they are applicable only to this toy model and the problem for full QCD
-% remains.
-
-% While there exist \emph{beter} methods than generic HMC (se,
-% e.g.~\cite{Eichhorn:2021ccz} for a comparison of different approaches), 
-
-% The problem of topological gauge configuration has model been studied (see,
-% e.g.~\cite{Eichhorn:2021ccz} for a comparison of different approaches) with varying success for the 2D U(1) model
-% implementation whose behavior is well understood\footnote{While \emph sa.
-%   sampling methods exist, our uiltimate goal is eventually .
-%
-
-% In this work, we consider a \(U(1)\) gauge model on a 2D periodic lattice.
-% % %
-% % This simplified gauge theory serves as simple toy-model that
-% % exhibits qualitative behavior similar to that of full QCD while remaining
-% % computationally tractable.
-% %
-% This simplified model is known to be exactly solvable and the problem of
-% generating configurations has been well studied~\cite{%
-%   Eichhorn:2021ccz,%
-%   johnsonGeneralHeatbathAlgorithm2010,%
-%   Bazavov:2005zy,%
-%   creutzConfinementCriticalDimensionality1979%
-% }, and there exist classical methods which sample the topology effectively~\footnote{%
-%   e.g.~\cite{Duerr2012}, which yields \(\mathscr{O}(1)\) auto-correlation times
-%   for all \(\beta\) and lattice volumes, but which does not generalize to QCD.
-% }.
-% %
-% % ~\cite{Duerr2012} classical methods which mix topological mixing 
-% % with that eliminate charge freezing 
-% % and classical methods for topological mixing .
-% %
-% Nevertheless, we are interested in this model due to the fact that it exhibits
-% qualitative behavior similar to that of full QCD (e.g. critical slowing down),
-% while remaining computationally feasible and easy to work with.%~\footnote{allows
-% % for rapid prototyping / testing new ideas}.
-% %
-% % We are interested in this model due to its relatiuve simplicity, as well as
-% % its qualitative behavior which 00
-
-% We are interested in this model primarily due to its relative simplicity
-% which allows for rapid prototyping , 
-%
 The theory is defined in terms of the link variables
 \(U_{\mu}(x) = e^{i x} \in U(1)\) with \(x \in [-\pi, \pi)\).
 %
@@ -253,10 +183,6 @@ defined in terms of the sum of the gauge variables around the elementary
 plaquette, \(x_{P} \equiv x_{\mu}(n) + x_{\nu}(n + \hat{\mu}) -
 x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)\), starting at site \(n\) of the
 lattice, and \(\sum_{P}\) denotes the sum over all such plaquettes.
-%\footnote{%
-%    Here, the sum \(\sum_{P}\) denotes the sum over all such plaquettes.
-%}
-%
 For a given lattice configuration, we can calculate the topological charge \(Q
 \in \mathbb{Z}\) using
 %
@@ -267,16 +193,13 @@ For a given lattice configuration, we can calculate the topological charge \(Q
 \end{equation}
 %
 As \(\beta \rightarrow \infty\),
-%the \(Q_{\mathbb{Z}} = 0\) sector becomes dominant and
 we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
 durations of the simulation.
 %
 This freezing can be quantatively measured by introducing the \emph{tunneling
 rate}
-%\footnote{
 (as measured between subsequent states in our chain \(i\) and
 \(i+1\) )
-%.}
 %
 \begin{equation}
   \overline{\delta Q}_{\mathbb{Z}} ~,~\mathrm{with}~~
@@ -407,7 +330,6 @@ As in HMC, we follow the general pattern of performing alternating updates of
 %
 
 We can ensure
-%our update is reversible
 the Jacobian is simple
 by splitting the \(\x\) update into two
 parts and sequentially updating complementary subsets using a binary mask
@@ -484,19 +406,19 @@ structure of the update functions.
 These architectures are easily invertible while maintaining a tractable
 Jacobian determinant, and have also been shown to be effective at approximating
 complicated target distributions in high-dimensional spaces ~\cite{%
-    Foreman:2021ljl,%
-    Li2021ANN,%
-    Foreman:2021ixr,%
-    Kanwar:2020xzo,%
-    2016arXiv160508803D,% dinhDensityEstimationUsing2016,%
-    Albergo:2021vyo,%
-    Boyda:2020hsi,%
-    2017arXiv171109268L,% levyGeneralizingHamiltonianMonte2018,%
-    Neklyudov2020OrbitalM,%
-    neklyudovInvolutiveMcmcUnifying2020,%
-    wehenkelYouSayNormalizing2020,%
-    liNeuralNetworkRenormalization2018a,%
-    Nicoli:2020njz%
+  2017arXiv171109268L,
+  2016arXiv160508803D,%dinhDensityEstimationUsing2016,%
+  liNeuralNetworkRenormalization2018a,%
+  Kanwar:2020xzo,%
+  wehenkelYouSayNormalizing2020,%
+  Nicoli:2020njz,%
+  Boyda:2020hsi,%
+  Li2021ANN,%
+  Albergo:2021vyo,%
+  Foreman:2021ixr,%
+  Foreman:2021ljl%
+  %Neklyudov2020OrbitalM,%
+  %neklyudovInvolutiveMcmcUnifying2020,%
 }.
 
 
