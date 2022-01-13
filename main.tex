@@ -150,10 +150,10 @@ here we restrict our work to the simpler 2D U(1) pure-gauge lattice
 theory.
 There are already many efficient alternatives for simulating this particular theory
 (see e.g.~\cite{Eichhorn:2021ccz} and references therein for a comparison),
-scaling up to full QCD remains challenging.
+however scaling up to full QCD remains challenging.
 %
 As the prefered method for full QCD,
-HMC is our baseline here for performance comparison.
+here HMC is our baseline for performance comparison.
 %
 The method presented here can be extended to full QCD in a relatively
 straightforward manner, though the cost of training and efficiency are
@@ -302,11 +302,13 @@ An illustration of this procedure can be seen in Figure~\ref{fig:hmc}.
 %
 \subsection{\label{subsec:hmc_issues}Issues with HMC}
 %
-HMC sampler is known to have difficulty traversing
-low-density zones,
-as the energy conserving symplectic integrator moves the system state
-in almost equal probabilities.
-This prevents the system from ever going to low probability regions,
+The HMC sampler is known to have difficulty traversing areas
+where the action is large,
+as the energy conserving symplectic integrator samples evenly over the
+augmented phase space, which, for fixed energy, is smaller
+in these areas.
+%
+This makes it less likely for the system to go into low probability regions,
 and effectively bounds the system within potential barriers,
 resulting in poor performance for distributions which have
 multiple isolated modes.
