@@ -113,18 +113,18 @@ The main task in lattice field theory calculations is to evaluate
 integrals of the form
 %
 \begin{equation}
-  \langle \mathcal{O} \rangle \propto
+  \langle \mathcal{O} \rangle =
   \int \left[ \mathcal{D} \x \right] \mathcal{O}(\x) p(\x),
     \label{eq:density_integral}
 \end{equation}
 %
-for some multivariate target distribution \(p(\x)\propto e^{-S(\x)}/Z\).
+for some normalized multivariate target distribution \(p(\x) = e^{-S(\x)}/Z\).
 %
 We can approximate the integral using Markov Chain Monte Carlo (MCMC) sampling
 techniques.
 %
 This is done by sequentially generating a chain of configurations \(\{\x_{1},
-\x_{2}, \ldots \x_{N}\}\), with \(\x_{i} \sim p(\x)\) and averaging the value of
+\x_{2}, \ldots \x_{N}\}\), with \(\x_{i}\) occuring according to the stationary distribution \(p(\x)\), and averaging the value of
 the function \(\mathcal{O}(\x)\) over the chain
 \begin{equation}
   \overline{\mathcal{O}} = \frac{1}{N} \sum_{n=1}^{N} \mathcal{O}(\x_n)  .
@@ -148,13 +148,12 @@ these induced correlations to become negligible.
 While our main target for improved gauge field generation is full QCD,
 here we restrict our work to the simpler 2D U(1) pure-gauge lattice
 theory.
-There are already many efficient alternatives for simulating this theory
+There are already many efficient alternatives for simulating this particular theory
 (see e.g.~\cite{Eichhorn:2021ccz} and references therein for a comparison),
-however, they either are not generally applicable to full QCD
-or haven't demonstrated a significant advantage over HMC there.
+scaling up to full QCD remains challenging.
 %
-For this reason we only consider HMC as a baseline method for
-performance comparison.
+As the prefered method for full QCD,
+HMC is our baseline here for performance comparison.
 %
 The method presented here can be extended to full QCD in a relatively
 straightforward manner, though the cost of training and efficiency are
@@ -254,7 +253,7 @@ along iso-probability contours of \(\mathcal{H} =\text{const.}\) from \(\xi =
 The error in this integration is then corrected by a Metropolis-Hastings (MH)
 accept/reject step.
 %
-\subsection{\label{subsec:lfint}Leapfrog Integrator}
+\subsection{\label{subsec:lfint}HMC algorithm with Leapfrog Integrator}
 %
 \begin{enumerate}
     \item Starting from \(\x_{i}\), resample the momentum \(\p_{i}\sim
@@ -319,7 +318,7 @@ lattice gauge models.
 %
 \section{\label{sec:l2hmc}Generalizing HMC: LeapfrogLayers}
 %
-In order to preserve the asymptotic behavior of HMC, our update must be
+In order to preserve the exact stationary distribution of the Markov Chain, our update must be
 explicitly reversible with a tractable Jacobian determinant.
 %
 To simplify notation, we introduce two functions, \(\Gamma\) \((\Lambda)\) to
@@ -346,8 +345,8 @@ Here, we associate \(+\) \((-)\) with the forward (backward) direction and note
 that running sequential updates in opposite directions has the effect of
 inverting the update.
 %
-We denote the complete state by \(\xi = (\x, \p, \pm)\), with target density
-given by \(p(\xi) = p(\x) p(\p) p(\pm)\).
+We denote the complete state by \(\xi = (\x, \p, d)\), with target density
+given by \(p(\xi) = p(\x) p(\p) p(d)\).
 %
 
 Explicitly, we can write this series of updates as\footnote{%
@@ -372,6 +371,18 @@ where \(\zeta_{\bar{\x}} = [\maskbar\odot \x, \p]\), \(\zeta_{\x} = [\mask \odot
 \p]\) \((\zeta_{\p} = [\x, \partial_{\x} S(\x)])\) is independent of \(\x\) \((\p)\)
 and is passed as input to the update functions \(\Lambda^{\pm}\)
 \((\Gamma^{\pm})\).
+%
+The acceptance probability
+%
+\begin{equation}
+A(\xi^{\ast} | \xi) =
+\min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)} \mathcal{J}(\xi^{\ast},\xi) \right\}
+\end{equation}
+%
+now includes a Jacobian factor $\mathcal{J}(\xi^{\ast},\xi)$
+which allows the inclusion of non-symplectic update steps.
+The Jacobian comes from the $v$ ($x$) scaling term in the $v$ ($x$) update, and
+is easily calculated.
 %
 \begin{figure}[htpb]
     \centering
@@ -412,7 +423,7 @@ complicated target distributions in high-dimensional spaces ~\cite{%
     Foreman2018,%
     Kanwar:2020xzo,%
     wehenkelYouSayNormalizing2020,%
-    Nicoli:2020njz%
+    Nicoli:2020njz,%
     Boyda:2020hsi,%
     Li2021ANN,%
     Albergo:2021vyo,%
@@ -487,18 +498,6 @@ a real-valued approximation of the usual (integer-valued) topological charge
 %
 This ensures that our loss function is continuous which helps to simplify the
 training procedure.
-%
-The acceptance probability
-%
-\begin{equation}
-A(\xi^{\ast} | \xi) =
-\min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)} \mathcal{J}(\xi^{\ast},\xi) \right\}
-\end{equation}
-%
-now includes an extra Jacobian factor $\mathcal{J}(\xi^{\ast},\xi)$
-which allows the inclusion of non-symplectic update steps.
-The Jacobian comes from the $v$ ($x$) scaling term in the $v$ ($x$) update, and
-is easily calculated.
 %
 For completeness, the details of an individual training step are summarized in
 Sec~\ref{subsubsec:trainstep}.
