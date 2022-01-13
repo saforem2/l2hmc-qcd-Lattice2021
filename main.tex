@@ -302,15 +302,13 @@ An illustration of this procedure can be seen in Figure~\ref{fig:hmc}.
 %
 \subsection{\label{subsec:hmc_issues}Issues with HMC}
 %
-Re-sampling the momentum at the start of each trajectory causes the energy
-levels we explore to be randomly selected.
-%
-This is reminiscient of the ``random-walk'' behavior of traditional MCMC and
-leads to a slow exploration of our target distribution (i.e. long
-autocorrelations).
-%
-Additionally, the HMC sampler is known to have difficulty traversing
-low-density zones, resulting in poor performance for distributions which have
+HMC sampler is known to have difficulty traversing
+low-density zones,
+as the energy conserving symplectic integrator moves the system state
+in almost equal probabilities.
+This prevents the system from ever going to low probability regions,
+and effectively bounds the system within potential barriers,
+resulting in poor performance for distributions which have
 multiple isolated modes.
 %
 This is particularly relevant in the case of sampling topological quantities in
