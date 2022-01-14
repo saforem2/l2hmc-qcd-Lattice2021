@@ -92,7 +92,7 @@
     topological charge when compared with traditional HMC, and look at how
     different quantities transform under our model.
     %
-    Our implementation is open source, and is publicly available on github at
+    Our implementation is open source, and is publicly available on GitHub at
     \href{https://www.github.com/saforem2/l2hmc-qcd}{github.com/saforem2/l2hmc-qcd}.
 }
 
@@ -124,7 +124,7 @@ We can approximate the integral using Markov Chain Monte Carlo (MCMC) sampling
 techniques.
 %
 This is done by sequentially generating a chain of configurations \(\{\x_{1},
-\x_{2}, \ldots \x_{N}\}\), with \(\x_{i}\) occuring according to the stationary distribution \(p(\x)\), and averaging the value of
+\x_{2}, \ldots \x_{N}\}\), with \(\x_{i}\) occurring according to the stationary distribution \(p(\x)\), and averaging the value of
 the function \(\mathcal{O}(\x)\) over the chain
 \begin{equation}
   \overline{\mathcal{O}} = \frac{1}{N} \sum_{n=1}^{N} \mathcal{O}(\x_n)  .
@@ -152,7 +152,7 @@ There are already many efficient alternatives for simulating this particular the
 (see e.g.~\cite{Eichhorn:2021ccz} and references therein for a comparison),
 however scaling up to full QCD remains challenging.
 %
-As the prefered method for full QCD,
+As the preferred method for full QCD,
 here HMC is our baseline for performance comparison.
 %
 The method presented here can be extended to full QCD in a relatively
@@ -195,7 +195,7 @@ As \(\beta \rightarrow \infty\),
 we see that the value of \(Q_\mathbb{Z}\) remains fixed for large
 durations of the simulation.
 %
-This freezing can be quantatively measured by introducing the \emph{tunneling
+This freezing can be quantitatively measured by introducing the \emph{tunneling
 rate}
 (as measured between subsequent states in our chain \(i\) and
 \(i+1\) )
@@ -226,7 +226,7 @@ From Figure~\ref{fig:qfreezing}, we can see that
 \section{\label{sec:hmc}Hamiltonian Monte Carlo (HMC)}
 %
 The Hamiltonian Monte Carlo algorithm begins by introducing a fictitious
-momentum, \(v\), for each coordinate varible, $x$, typically taken
+momentum, \(v\), for each coordinate variable, $x$, typically taken
 from an independent normal distribution.
 %
 This allows us to write the joint target density of the \(\xi \equiv (\x, \p)\)
@@ -475,7 +475,7 @@ Figure~\ref{fig:networks}.
 
 \subsection{\label{subsec:training}Training Details}
 %
-Our goal in training the nework is to find a sampler that efficiently
+Our goal in training the network is to find a sampler that efficiently
 jumps between different topological charge sectors.
 %
 This can be done by constructing a loss function that maximizes the expected
@@ -513,7 +513,7 @@ Sec~\ref{subsubsec:trainstep}.
       \min\left\{1, \frac{p(\xi^{\ast})}{p(\xi)}
       \mathcal{J}(\xi^{\ast},\xi) \right\}\)
     \item Evaluate the loss function \(\mathcal{L} \leftarrow
-        \mathcal{L}_{\theta}(\xi^{\ast}, \xi)\), and backpropagate gradients to
+        \mathcal{L}_{\theta}(\xi^{\ast}, \xi)\), and back propagate gradients to
         update weights
     \item Evaluate Metropolis-Hastings criteria and assign the next state in
         the chain according to
